@@ -16,6 +16,6 @@ find_package(SDL3 REQUIRED)
 target_link_libraries(falling_leaves 
 PRIVATE 
     SDL3::SDL3
-    ${OPENGL_INCLUDE_DIR}
+    OpenGL::GL
     GLEW::GLEW
 )
