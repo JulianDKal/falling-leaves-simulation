@@ -17,6 +17,11 @@ echo '{
     "sdl3",
     "opengl",
     "glew"
+    {
+      "name": "imgui",
+      "features": ["sdl3-binding", "opengl3-binding"]
+    },
+    "glm"
   ]
 }' > vcpkg.json
 

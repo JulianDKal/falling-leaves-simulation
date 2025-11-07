@@ -4,6 +4,9 @@
 #include "imgui.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_opengl3.h"
+#include "glm/glm.hpp"
+#include "Shader.h"
+#include "Leaf.h"
 
 float wWidth = 1920.0f;
 float wHeight = 1080.0f;
@@ -13,13 +16,9 @@ int main() {
         std::cerr << "SDL Init failed: " << SDL_GetError() << std::endl;
         return -1;
     }
-
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-
-    SDL_Window* window = SDL_CreateWindow("Falling Leaves Simulation",
-                                          wWidth, wHeight,
-                                          SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    SDL_Window* window = SDL_CreateWindow("Falling Leaves Simulation",wWidth, wHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (!window) {
         std::cerr << "Window creation failed: " << SDL_GetError() << std::endl;
         SDL_Quit();
@@ -27,7 +26,6 @@ int main() {
     }
 
     SDL_SetWindowMinimumSize(window, 800, 600);
-
     SDL_GLContext context = SDL_GL_CreateContext(window);
     if (!context) {
         std::cerr << "OpenGL context creation failed: " << SDL_GetError() << std::endl;
@@ -51,20 +49,23 @@ int main() {
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-
     // Setup ImGui style
     ImGui::StyleColorsDark();
-
     // Setup Platform/Renderer backends
     ImGui_ImplSDL3_InitForOpenGL(window, context);
     ImGui_ImplOpenGL3_Init("#version 330");
 
-    bool show_demo_window = true;
+
+    bool show_demo_window = false;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+    Shader leafShader;
+    leafShader.createProgram("./../shaders/triangle_vertex.glsl","./../shaders/triangle_fragment.glsl");
+    Leaf leaf(glm::vec3 {0.0f});
 
     bool running = true;
+
     while (running)
     {
         SDL_Event event;
@@ -75,12 +76,23 @@ int main() {
                 running = false;
             }
         }
-        
+
+        glClearColor(1, 1, 1, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         ImGui_ImplSDL3_NewFrame();
         ImGui_ImplOpenGL3_NewFrame();
         ImGui::NewFrame();
 
         if(show_demo_window) ImGui::ShowDemoWindow();
+
+        glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+        glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+        // In your render loop:
+        glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1280.0f/720.0f, 0.1f, 100.0f);
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         {
@@ -104,11 +116,9 @@ int main() {
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
             ImGui::End();
         }
-
         ImGui::Render();
+        leaf.draw(leafShader, view, projection);
 
-        glClearColor(1, 1, 1, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 

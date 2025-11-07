@@ -21,6 +21,7 @@ add_executable(falling_leaves ${SOURCES})
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(SDL3 REQUIRED)
+find_package(glm)
 #find_package(imgui REQUIRED) //Does not work for imgui for some reason
 
 target_link_libraries(falling_leaves 
@@ -29,6 +30,7 @@ PRIVATE
     OpenGL::GL
     GLEW::GLEW
     ${IMGUI_LIBRARY}
+    glm::glm
 )
 
 # target_link_options(falling_leaves PRIVATE ${IMGUI_LIBRARY})
