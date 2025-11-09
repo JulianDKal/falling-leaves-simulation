@@ -7,6 +7,9 @@
 #include "glm/glm.hpp"
 #include "Shader.h"
 #include "Leaf.h"
+#include <cstdlib>
+#include <vector>
+#include <random>
 
 float wWidth = 1920.0f;
 float wHeight = 1080.0f;
@@ -62,9 +65,40 @@ int main() {
 
     Shader leafShader;
     leafShader.createProgram("./../shaders/triangle_vertex.glsl","./../shaders/triangle_fragment.glsl");
-    Leaf leaf(glm::vec3 {0.0f});
+    Leaf leaf(glm::vec3 {2.0f, 1.0f, -3.0f});
+    std::vector<Leaf> leaves;
+    leaves.reserve(100);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> posDist(-3.0f, 3.0f);    // Position range
+    std::uniform_real_distribution<float> zDist(-8.0f, -3.0f);
+    std::uniform_real_distribution<float> rotDist(0.0f, 360.0f); 
 
+    for (int i = 0; i < 1000; i++)
+    {
+        glm::vec3 position {
+            posDist(gen),  // x: -10 to 10
+            posDist(gen),  // y: -10 to 10  
+            zDist(gen)   // z: -10 to 0
+        };
+        std::cout << position.x << " " << position.y << " " << position.z << std::endl;
+        
+        glm::vec3 rotation {
+            rotDist(gen),  // x rotation: -180 to 180 degrees
+            rotDist(gen),  // y rotation: -180 to 180 degrees
+            rotDist(gen)   // z rotation: -180 to 180 degrees
+        };
+
+        std::cout << rotation.x << " " << rotation.y << " " << rotation.z << std::endl;
+        // glm::vec3 rotation {0.0f};
+        
+        Leaf l(position);
+        l.setRotation(rotation);
+        leaves.push_back(l);
+    }
+    
     bool running = true;
+    float rotationSpeed = 0.3f;
 
     while (running)
     {
@@ -117,11 +151,15 @@ int main() {
             ImGui::End();
         }
         ImGui::Render();
-        leaf.draw(leafShader, view, projection);
+
+        for (int i = 0; i < leaves.size(); i++)
+        {
+            leaves[i].addRotation(glm::vec3 {0, rotationSpeed, rotationSpeed});
+            leaves[i].draw(leafShader, view, projection);
+        }
+        //leaves[0].draw(leafShader, view, projection);
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-
         SDL_GL_SwapWindow(window);
 
     }

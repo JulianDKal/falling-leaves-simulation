@@ -14,11 +14,14 @@ class Leaf
 private:
     glm::vec3 position;
     glm::vec3 rotation;
-    float size = 1;
+    glm::mat4 model;
+    float size = 0.3f;
     unsigned int vao, vbo;
     
 public:
     Leaf(const glm::vec3& pos);
+    void setRotation(const glm::vec3& newRotation);
+    void addRotation(const glm::vec3& newRotation);
     void draw(Shader& shader, const glm::mat4& view, const glm::mat4& projection);
     ~Leaf();    
 };
