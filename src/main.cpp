@@ -14,6 +14,23 @@
 float wWidth = 1920.0f;
 float wHeight = 1080.0f;
 
+    float gridVertices[] = {
+     // Positions          // UVs (texture coordinates)
+    -250.0f, 0.0f,  250.0f,  0.0f, 25.0f,  // Top-left
+     250.0f, 0.0f,  250.0f,  25.0f, 25.0f,  // Top-right
+     250.0f, 0.0f, -250.0f,  25.0f, 0.0f,  // Bottom-right
+    -250.0f, 0.0f, -250.0f,  0.0f, 0.0f   // Bottom-left
+    };
+
+    float xAxisVertices[] = {
+        -100.0f, 0.01f, 0.0f,
+        100.0f, 0.01f, 0.0f
+    };
+    float zAxisVertices[] = {
+        0.0f, 0.01f, -100.0f,
+        0.0f, 0.01f, 100.0f
+    };
+
 int main() {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "SDL Init failed: " << SDL_GetError() << std::endl;
@@ -65,13 +82,57 @@ int main() {
 
     Shader leafShader;
     leafShader.createProgram("./../shaders/triangle_vertex.glsl","./../shaders/triangle_fragment.glsl");
-    Leaf leaf(glm::vec3 {2.0f, 1.0f, -3.0f});
+    Shader gridShader;
+    gridShader.createProgram("./../shaders/grid_vertex.glsl", "./../shaders/grid_fragment.glsl");
+    Shader lineShader;
+    lineShader.createProgram("./../shaders/simple_vertex.glsl", "./../shaders/simple_fragment.glsl");
+
+    Texture gridTexture;
+    gridTexture.initialize("./../textures/grid.jpg", 0);
+
+    //Grid object setup
+    unsigned int grid_VBO, grid_VAO;
+    glGenVertexArrays(1, &grid_VAO);
+    glGenBuffers(1, &grid_VBO);
+
+    glBindVertexArray(grid_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, grid_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(gridVertices), gridVertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    //Axis OBjects setup
+    unsigned int xAxis_VBO, xAxis_VAO;
+    glGenVertexArrays(1, &xAxis_VAO);
+    glGenBuffers(1, &xAxis_VBO);
+
+    glBindVertexArray(xAxis_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, xAxis_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(xAxisVertices), xAxisVertices, GL_DYNAMIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    unsigned int zAxis_VBO, zAxis_VAO;
+    glGenVertexArrays(1, &zAxis_VAO);
+    glGenBuffers(1, &zAxis_VBO);
+
+    glBindVertexArray(zAxis_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, zAxis_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(zAxisVertices), zAxisVertices, GL_DYNAMIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+
     std::vector<Leaf> leaves;
-    leaves.reserve(100);
+    leaves.reserve(1000);
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> posDist(-3.0f, 3.0f);    // Position range
-    std::uniform_real_distribution<float> zDist(-8.0f, -3.0f);
+    std::uniform_real_distribution<float> posDist(-5.0f, 5.0f);    // Position range
     std::uniform_real_distribution<float> rotDist(0.0f, 360.0f); 
 
     for (int i = 0; i < 1000; i++)
@@ -79,7 +140,7 @@ int main() {
         glm::vec3 position {
             posDist(gen),  // x: -10 to 10
             posDist(gen),  // y: -10 to 10  
-            zDist(gen)   // z: -10 to 0
+            posDist(gen)   // z: -10 to 0
         };
         std::cout << position.x << " " << position.y << " " << position.z << std::endl;
         
@@ -120,9 +181,13 @@ int main() {
 
         if(show_demo_window) ImGui::ShowDemoWindow();
 
-        glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+        glm::vec3 cameraPos = glm::vec3(0.0f, 3.0f, 3.0f);
+        cameraPos *= 5.0f;
         glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-        glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+        glm::vec3 cameraRight = glm::vec3(1.0, 0.0, 0.0);
+
+        glm::vec3 cameraUp = glm::cross(cameraRight, -cameraPos);
+        std::cout << cameraUp.x << " " << cameraUp.y << " " << cameraUp.z << std::endl;
 
         // In your render loop:
         glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
@@ -152,6 +217,35 @@ int main() {
         }
         ImGui::Render();
 
+        glm::mat4 model = glm::mat4(1.0f);
+
+        glBindVertexArray(grid_VAO);
+        glUseProgram(gridShader.ID);
+        gridShader.useTexture(gridTexture, "gridTexture");
+        gridShader.setMatrix4("model", model);
+        gridShader.setMatrix4("view", view);
+        gridShader.setMatrix4("projection", projection);
+        
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+        glm::vec3 xColor = {1.0f, 0.0f, 0.0f};
+        glm::vec3 zColor = {0.0f, 0.0f, 1.0f};
+
+        glLineWidth(4.0f);
+
+        glBindVertexArray(xAxis_VAO);
+        glUseProgram(lineShader.ID);
+        lineShader.setVec3f("color", xColor);
+        lineShader.setMatrix4("model", model);
+        lineShader.setMatrix4("view", view);
+        lineShader.setMatrix4("projection", projection);
+        glDrawArrays(GL_LINES, 0, 2);
+
+        glBindVertexArray(zAxis_VAO);
+        lineShader.setVec3f("color", zColor);
+        glDrawArrays(GL_LINES, 0, 2);
+
+        glLineWidth(1.0f);
         for (int i = 0; i < leaves.size(); i++)
         {
             leaves[i].addRotation(glm::vec3 {0, rotationSpeed, rotationSpeed});
