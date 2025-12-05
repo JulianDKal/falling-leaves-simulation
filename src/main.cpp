@@ -75,6 +75,10 @@ int main() {
     ImGui_ImplSDL3_InitForOpenGL(window, context);
     ImGui_ImplOpenGL3_Init("#version 330");
 
+    //enable transparency for leaf texture
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 
     bool show_demo_window = false;
     bool show_another_window = false;
@@ -89,6 +93,9 @@ int main() {
 
     Texture gridTexture;
     gridTexture.initialize("./../textures/grid.jpg", 0);
+
+    Texture leafTexture;
+    leafTexture.initialize("./../textures/leaf-texture1.png", 0);
 
     //Grid object setup
     unsigned int grid_VBO, grid_VAO;
@@ -246,8 +253,13 @@ int main() {
         glDrawArrays(GL_LINES, 0, 2);
 
         float time = SDL_GetTicks() / 1000.0f; // seconds
-        glUseProgram(leafShader.ID);
-        leafShader.setFloat("uTime", time);
+        //glUseProgram(leafShader.ID);
+        //leafShader.setFloat("uTime", time);
+
+        glUseProgram(leafShader.ID); // make sure shader is active
+
+        leafShader.useTexture(leafTexture, "leafTexture");
+
 
         glLineWidth(1.0f);
         for (int i = 0; i < leaves.size(); i++)
