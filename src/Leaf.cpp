@@ -30,10 +30,6 @@ Leaf::Leaf(const glm::vec3& pos)
 
 void Leaf::setRotation(const glm::vec3 &newRotation)
 {
-    // model = glm::rotate(model, glm::radians(newRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    // model = glm::rotate(model, glm::radians(newRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    // model = glm::rotate(model, glm::radians(newRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-
     rotation = newRotation;
 }
 

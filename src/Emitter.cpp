@@ -8,20 +8,29 @@ int Emitter::instancesCount()
 void Emitter::update()
 {
     for (int i = 0; i < leaves.size(); i++)
-        {
-            leaves[i].addRotation(glm::vec3 {0, rotationSpeed, rotationSpeed});
-            // leaves[i].draw(leafShader, view, projection);
-        }
+    {
+        leaves[i].addRotation(glm::vec3 {0, rotationSpeed, rotationSpeed});
+    }
 }
 
 void Emitter::draw(const glm::mat4 &view, const glm::mat4 &projection)
 {
+    glUseProgram(leafShader.ID);
+    leafShader.useTexture(leafTexture, "leafTexture");
+
+    for (int i = 0; i < leaves.size(); i++)
+    {
+        leaves[i].draw(leafShader, view, projection);
+    }
+    
 }
 
 Emitter::Emitter(int count)
 {
     numInstances = count;
-    leafShader.createProgram("./../shaders/triangle_vertex.glsl","./../shaders/triangle_fragment.glsl");
+    leafShader.createProgram("./../shaders/leaf_vertex.glsl","./../shaders/leaf_fragment.glsl");
+    leafTexture.initialize("./../textures/leaf-texture1.png", 0);
+
     leaves.reserve(numInstances);
 
     glGenVertexArrays(1, &leafVAO);

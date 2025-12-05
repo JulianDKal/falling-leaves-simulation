@@ -87,8 +87,6 @@ int main() {
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    Shader leafShader;
-    leafShader.createProgram("./../shaders/quad_uv_vertex.glsl","./../shaders/quad_uv_fragment.glsl");
     Shader gridShader;
     gridShader.createProgram("./../shaders/grid_vertex.glsl", "./../shaders/grid_fragment.glsl");
     Shader lineShader;
@@ -96,9 +94,6 @@ int main() {
 
     Texture gridTexture;
     gridTexture.initialize("./../textures/grid.jpg", 0);
-
-    Texture leafTexture;
-    leafTexture.initialize("./../textures/leaf-texture1.png", 0);
 
     Camera cam;
     Emitter emitter(1000);    
@@ -230,19 +225,9 @@ int main() {
         lineShader.setVec3f("color", zColor);
         glDrawArrays(GL_LINES, 0, 2);
 
-        float time = SDL_GetTicks() / 1000.0f; // seconds
-        //glUseProgram(leafShader.ID);
-        //leafShader.setFloat("uTime", time);
-
-        glUseProgram(leafShader.ID); // make sure shader is active
-
-        leafShader.useTexture(leafTexture, "leafTexture");
-
-
         glLineWidth(1.0f);
 
         //Actually draw all the leaves
-        //TODO: seperate drawing and updating for this command
         emitter.update();
         emitter.draw(view, projection);
 

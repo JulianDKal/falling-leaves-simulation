@@ -22,7 +22,7 @@ private:
     glm::vec3 position;
     glm::vec3 rotation;
     glm::mat4 model;
-    float size = 0.3f;
+    float size = 0.6f;
     unsigned int vao, vbo, ebo;
     
 public:

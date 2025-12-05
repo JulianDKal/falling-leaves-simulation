@@ -4,12 +4,6 @@
 #include "glm/glm.hpp"
 #include <random>
 
-static float leafVertices[] = {
-        -0.5f, 0.0f, 0.0f,
-        0.5f, 0.0f, 0.0f,
-        0.0f, 0.5f, 0.0f
-    };
-
 class Emitter
 {
 private:
@@ -19,6 +13,7 @@ private:
     unsigned int transformationsVBO;
     int numInstances;
     Shader leafShader;
+    Texture leafTexture;
 
     float rotationSpeed = 0.3f;
 public:
