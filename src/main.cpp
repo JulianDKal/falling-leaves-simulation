@@ -12,6 +12,7 @@
 #include <random>
 #include "Random.h"
 #include "Camera.h"
+#include "Emitter.h"
 
 float wWidth = 1920.0f;
 float wHeight = 1080.0f;
@@ -93,6 +94,7 @@ int main() {
     gridTexture.initialize("./../textures/grid.jpg", 0);
 
     Camera cam;
+    Emitter emitter(1000);    
 
     //Grid object setup
     unsigned int grid_VBO, grid_VAO;
@@ -130,34 +132,6 @@ int main() {
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
-    std::vector<Leaf> leaves;
-    leaves.reserve(1000);
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> posDist(-5.0f, 5.0f);    // Position range
-    std::uniform_real_distribution<float> rotDist(0.0f, 360.0f); 
-
-    for (int i = 0; i < 1000; i++)
-    {
-        glm::vec3 position {
-            posDist(gen),  // x: -10 to 10
-            posDist(gen),  // y: -10 to 10  
-            posDist(gen)   // z: -10 to 0
-        };
-        
-        glm::vec3 rotation {
-            rotDist(gen),  // x rotation: -180 to 180 degrees
-            rotDist(gen),  // y rotation: -180 to 180 degrees
-            rotDist(gen)   // z rotation: -180 to 180 degrees
-        };
-
-        // glm::vec3 rotation {0.0f};
-        
-        Leaf l(position);
-        l.setRotation(rotation);
-        leaves.push_back(l);
-    }
     
     bool running = true;
     float rotationSpeed = 0.3f;
@@ -250,12 +224,11 @@ int main() {
         glDrawArrays(GL_LINES, 0, 2);
 
         glLineWidth(1.0f);
-        for (int i = 0; i < leaves.size(); i++)
-        {
-            leaves[i].addRotation(glm::vec3 {0, rotationSpeed, rotationSpeed});
-            leaves[i].draw(leafShader, view, projection);
-        }
-        //leaves[0].draw(leafShader, view, projection);
+
+        //Actually draw all the leaves
+        //TODO: seperate drawing and updating for this command
+        emitter.update();
+        emitter.draw(view, projection);
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);

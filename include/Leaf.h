@@ -19,6 +19,7 @@ private:
     unsigned int vao, vbo;
     
 public:
+    int id;
     Leaf(const glm::vec3& pos);
     void setRotation(const glm::vec3& newRotation);
     void addRotation(const glm::vec3& newRotation);
