@@ -10,6 +10,8 @@
 #include <cstdlib>
 #include <vector>
 #include <random>
+#include "Random.h"
+#include "Camera.h"
 
 float wWidth = 1920.0f;
 float wHeight = 1080.0f;
@@ -90,6 +92,8 @@ int main() {
     Texture gridTexture;
     gridTexture.initialize("./../textures/grid.jpg", 0);
 
+    Camera cam;
+
     //Grid object setup
     unsigned int grid_VBO, grid_VAO;
     glGenVertexArrays(1, &grid_VAO);
@@ -127,7 +131,6 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-
     std::vector<Leaf> leaves;
     leaves.reserve(1000);
     std::random_device rd;
@@ -142,7 +145,6 @@ int main() {
             posDist(gen),  // y: -10 to 10  
             posDist(gen)   // z: -10 to 0
         };
-        std::cout << position.x << " " << position.y << " " << position.z << std::endl;
         
         glm::vec3 rotation {
             rotDist(gen),  // x rotation: -180 to 180 degrees
@@ -150,7 +152,6 @@ int main() {
             rotDist(gen)   // z rotation: -180 to 180 degrees
         };
 
-        std::cout << rotation.x << " " << rotation.y << " " << rotation.z << std::endl;
         // glm::vec3 rotation {0.0f};
         
         Leaf l(position);
@@ -170,6 +171,16 @@ int main() {
             if(event.type == SDL_EVENT_QUIT) {
                 running = false;
             }
+            //Pan right and left with the mouse and rotate around the object
+            else if(event.type == SDL_EVENT_MOUSE_MOTION){
+                if(event.motion.state == SDL_BUTTON_LEFT){
+                    cam.rotate(event.motion.xrel * 0.005f, event.motion.yrel * 0.005f);
+                }
+            }
+            //Zoom in and out
+            else if(event.type == SDL_EVENT_MOUSE_WHEEL) {
+                cam.zoom(event.wheel.y * 0.4f);
+            }
         }
 
         glClearColor(1, 1, 1, 1.0f);
@@ -181,16 +192,9 @@ int main() {
 
         if(show_demo_window) ImGui::ShowDemoWindow();
 
-        glm::vec3 cameraPos = glm::vec3(0.0f, 3.0f, 3.0f);
-        cameraPos *= 5.0f;
-        glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-        glm::vec3 cameraRight = glm::vec3(1.0, 0.0, 0.0);
+        cam.update();
 
-        glm::vec3 cameraUp = glm::cross(cameraRight, -cameraPos);
-        std::cout << cameraUp.x << " " << cameraUp.y << " " << cameraUp.z << std::endl;
-
-        // In your render loop:
-        glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+        glm::mat4 view = cam.getViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1280.0f/720.0f, 0.1f, 100.0f);
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.

@@ -10,13 +10,13 @@ cd vcpkg
 vcpkg new --application
 #specify the dependencies to download for vcpkg
 echo '{
-  "name": "fallinv-leaves-simulation",
+  "name": "falling-leaves-simulation",
   "version": "1.0.0",
   "description": "An app that simulates large numbers of falling leaves",
   "dependencies": [
     "sdl3",
     "opengl",
-    "glew"
+    "glew",
     {
       "name": "imgui",
       "features": ["sdl3-binding", "opengl3-binding"]
