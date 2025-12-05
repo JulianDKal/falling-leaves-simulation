@@ -81,7 +81,7 @@ int main() {
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     Shader leafShader;
-    leafShader.createProgram("./../shaders/triangle_vertex.glsl","./../shaders/triangle_fragment.glsl");
+    leafShader.createProgram("./../shaders/quad_uv_vertex.glsl","./../shaders/quad_uv_fragment.glsl");
     Shader gridShader;
     gridShader.createProgram("./../shaders/grid_vertex.glsl", "./../shaders/grid_fragment.glsl");
     Shader lineShader;
@@ -244,6 +244,10 @@ int main() {
         glBindVertexArray(zAxis_VAO);
         lineShader.setVec3f("color", zColor);
         glDrawArrays(GL_LINES, 0, 2);
+
+        float time = SDL_GetTicks() / 1000.0f; // seconds
+        glUseProgram(leafShader.ID);
+        leafShader.setFloat("uTime", time);
 
         glLineWidth(1.0f);
         for (int i = 0; i < leaves.size(); i++)

@@ -4,10 +4,11 @@
 #include "Shader.h"
 
 static float leafVertices[] = {
-    -0.5f, -0.5f, 0.0f,   // bottom-left
-     0.5f, -0.5f, 0.0f,   // bottom-right
-     0.5f,  0.5f, 0.0f,   // top-right
-    -0.5f,  0.5f, 0.0f    // top-left
+    //   position                        UV
+    -0.5f,  -0.5f, 0.0f,     0.0f,  0.0f,   // bottom-left
+    0.5f,   -0.5f, 0.0f,     1.0f,  0.0f,   // bottom-right
+    0.5f,  0.5f, 0.0f,    1.0f, 1.0f,   // top-right
+    -0.5f, 0.5f, 0.0f,    0.0f, 1.0f    // top-left
 };
 
 static unsigned int leafIndices[] = {
@@ -22,7 +23,7 @@ private:
     glm::vec3 rotation;
     glm::mat4 model;
     float size = 0.3f;
-    unsigned int vao, vbo;
+    unsigned int vao, vbo, ebo;
     
 public:
     Leaf(const glm::vec3& pos);
