@@ -19,9 +19,9 @@ float wHeight = 1080.0f;
 
     float gridVertices[] = {
      // Positions          // UVs (texture coordinates)
-    -250.0f, 0.0f,  250.0f,  0.0f, 25.0f,  // Top-left
-     250.0f, 0.0f,  250.0f,  25.0f, 25.0f,  // Top-right
-     250.0f, 0.0f, -250.0f,  25.0f, 0.0f,  // Bottom-right
+    -250.0f, 0.0f,  250.0f,  0.0f, 75.0f,  // Top-left
+     250.0f, 0.0f,  250.0f,  75.0f, 75.0f,  // Top-right
+     250.0f, 0.0f, -250.0f,  75.0f, 0.0f,  // Bottom-right
     -250.0f, 0.0f, -250.0f,  0.0f, 0.0f   // Bottom-left
     };
 
@@ -90,13 +90,13 @@ int main() {
     Shader gridShader;
     gridShader.createProgram("./../shaders/grid_vertex.glsl", "./../shaders/grid_fragment.glsl");
     Shader lineShader;
-    lineShader.createProgram("./../shaders/simple_vertex.glsl", "./../shaders/simple_fragment.glsl");
+    lineShader.createProgram("./../shaders/line_vertex.glsl", "./../shaders/line_fragment.glsl");
 
     Texture gridTexture;
     gridTexture.initialize("./../textures/grid.jpg", 0);
 
     Camera cam;
-    Emitter emitter(1000);    
+    Emitter emitter(10000);    
 
     //Grid object setup
     unsigned int grid_VBO, grid_VAO;
