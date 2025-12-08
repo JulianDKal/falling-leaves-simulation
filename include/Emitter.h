@@ -34,6 +34,7 @@ public:
     int instancesCount();
     void update();
     void draw(const glm::mat4& view, const glm::mat4& projection);
+    void setTimeUniform(float time);
     Emitter(int count);
     ~Emitter();
 };
