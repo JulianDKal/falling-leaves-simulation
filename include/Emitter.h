@@ -29,6 +29,7 @@ private:
     Texture leafTexture;
 
     float rotationSpeed = 0.3f;
+    float totalTime;
     void updateTransformBuffer();
 public:
     int instancesCount();

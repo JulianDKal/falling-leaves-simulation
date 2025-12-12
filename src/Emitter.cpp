@@ -7,6 +7,11 @@ int Emitter::instancesCount()
 
 void Emitter::update(float dT)
 {
+    totalTime += dT;  // accumulate
+
+    // Set the uniform once per frame
+    setTimeUniform(totalTime);
+
     for (int i = 0; i < leaves.size(); i++)
     {
         leaves[i].addRotation(glm::vec3 {0, rotationSpeed, rotationSpeed});
