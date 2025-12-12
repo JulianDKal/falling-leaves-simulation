@@ -47,8 +47,9 @@ Emitter::Emitter(int count)
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> posDist(-5.0f, 5.0f);    // Position range
+    std::uniform_real_distribution<float> posDist(-10.0f, 10.0f);    // Position range
     std::uniform_real_distribution<float> rotDist(0.0f, 360.0f); 
+    std::uniform_real_distribution<float> speedDist(0.5f, 4.0f);
 
     //Generate buffers for the leaf object that will be used for instancing
     glGenVertexArrays(1, &leafVAO);
@@ -95,8 +96,8 @@ Emitter::Emitter(int count)
     for (int i = 0; i < numInstances; i++)
     {
         glm::vec3 position {
-            posDist(gen),  // x: -10 to 10
-            posDist(gen),  // y: -10 to 10  
+            posDist(gen) ,  // x: -10 to 10
+            (posDist(gen) + 10.0f) * 0.6,  // y: -10 to 10  
             posDist(gen)   // z: -10 to 0
         };
         
@@ -108,7 +109,7 @@ Emitter::Emitter(int count)
 
         // glm::vec3 rotation {0.0f};
         
-        Leaf l(position);
+        Leaf l(position, speedDist(gen));
         l.setRotation(rotation);
         leaves.push_back(l);
     }

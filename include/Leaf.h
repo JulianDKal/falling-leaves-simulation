@@ -11,10 +11,11 @@ private:
     glm::vec3 rotation;
     glm::mat4 model;
     float size = 0.6f;
+    float fallingSpeed = 0.02f;
     // unsigned int vao, vbo, ebo;
     
 public:
-    Leaf(const glm::vec3& pos);
+    Leaf(const glm::vec3& pos, float speedVariation);
     void setRotation(const glm::vec3& newRotation);
     void addRotation(const glm::vec3& newRotation);
     const glm::mat4& getLeafModel() const;

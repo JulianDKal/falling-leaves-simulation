@@ -1,31 +1,9 @@
 #include "Leaf.h"
 
-Leaf::Leaf(const glm::vec3& pos)
+Leaf::Leaf(const glm::vec3& pos, float speedVariation)
 {
     position = pos;
-
-    // glGenVertexArrays(1, &vao);
-    // glGenBuffers(1, &vbo);
-
-    // glGenBuffers(1, &ebo);
-    
-    // glBindVertexArray(vao);
-
-    // glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(leafVertices), leafVertices, GL_DYNAMIC_DRAW);
-
-    // // EBO
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(leafIndices), leafIndices, GL_STATIC_DRAW);
-
-    // // POS (location = 0)
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    // glEnableVertexAttribArray(0);
-
-    // // UV  (location = 1)
-    // glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    // glEnableVertexAttribArray(1);
-
+    fallingSpeed *= speedVariation;
 }
 
 void Leaf::setRotation(const glm::vec3 &newRotation)
@@ -47,6 +25,9 @@ void Leaf::update()
     getErrorCode();
 
     model = glm::mat4(1.0f);
+
+    position.y -= fallingSpeed;
+    if(position.y < 0) position.y = 15.0f;
     model = glm::translate(model, position);
     model = glm::scale(model, glm::vec3(size));
     
