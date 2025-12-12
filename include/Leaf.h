@@ -13,6 +13,7 @@ private:
     glm::vec3 gravity = glm::vec3(0.0f, -9.81f, 0.0f);
 
     glm::mat4 model;
+    float drag = 0.66f;
     float size = 0.6f;
     float fallingSpeed = 0.02f;
     // unsigned int vao, vbo, ebo;

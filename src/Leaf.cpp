@@ -28,6 +28,8 @@ void Leaf::update(float dT)
 
     velocity += gravity * dT;
 
+    velocity *= drag;
+
     position += velocity * dT;
     if(position.y < 0) {
         position.y = 15.0f;
