@@ -17,22 +17,25 @@
 float wWidth = 1920.0f;
 float wHeight = 1080.0f;
 
-    float gridVertices[] = {
-     // Positions          // UVs (texture coordinates)
-    -250.0f, 0.0f,  250.0f,  0.0f, 75.0f,  // Top-left
-     250.0f, 0.0f,  250.0f,  75.0f, 75.0f,  // Top-right
-     250.0f, 0.0f, -250.0f,  75.0f, 0.0f,  // Bottom-right
-    -250.0f, 0.0f, -250.0f,  0.0f, 0.0f   // Bottom-left
-    };
+float gridVertices[] = {
+    // Positions          // UVs (texture coordinates)
+-250.0f, 0.0f,  250.0f,  0.0f, 75.0f,  // Top-left
+    250.0f, 0.0f,  250.0f,  75.0f, 75.0f,  // Top-right
+    250.0f, 0.0f, -250.0f,  75.0f, 0.0f,  // Bottom-right
+-250.0f, 0.0f, -250.0f,  0.0f, 0.0f   // Bottom-left
+};
 
-    float xAxisVertices[] = {
-        -100.0f, 0.01f, 0.0f,
-        100.0f, 0.01f, 0.0f
-    };
-    float zAxisVertices[] = {
-        0.0f, 0.01f, -100.0f,
-        0.0f, 0.01f, 100.0f
-    };
+float xAxisVertices[] = {
+    -100.0f, 0.01f, 0.0f,
+    100.0f, 0.01f, 0.0f
+};
+float zAxisVertices[] = {
+    0.0f, 0.01f, -100.0f,
+    0.0f, 0.01f, 100.0f
+};
+
+double currentTime, lastFrameTime = 0.0;
+float deltaTime;
 
 int main() {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -141,6 +144,14 @@ int main() {
 
     while (running)
     {
+        //Calculate delta time
+        currentTime = SDL_GetPerformanceCounter();
+        //SDL_GetPerformanceFrequency is the resolution of the performance counter, could for example be 1 million for microseconds
+        deltaTime = (currentTime - lastFrameTime) / SDL_GetPerformanceFrequency(); 
+        lastFrameTime = currentTime;
+
+        //std::cout << deltaTime << " " << deltaTime / SDL_GetPerformanceFrequency() << " " << SDL_GetPerformanceFrequency() << std::endl;
+
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
@@ -159,6 +170,12 @@ int main() {
                 cam.zoom(event.wheel.y * 0.4f);
             }
         }
+
+        //acc, speed, pos
+        //AddForce(10) --> acc geupdated
+        //speed += acc * deltaTime;
+        //pos += speed * deltaTime;
+
 
         glClearColor(1, 1, 1, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -229,7 +246,7 @@ int main() {
         glLineWidth(1.0f);
 
         //Actually draw all the leaves
-        emitter.update();
+        emitter.update(deltaTime);
         emitter.draw(view, projection);
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

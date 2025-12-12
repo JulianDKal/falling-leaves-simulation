@@ -5,7 +5,7 @@ int Emitter::instancesCount()
     return numInstances;
 }
 
-void Emitter::update()
+void Emitter::update(float dT)
 {
     for (int i = 0; i < leaves.size(); i++)
     {

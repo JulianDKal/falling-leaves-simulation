@@ -32,7 +32,7 @@ private:
     void updateTransformBuffer();
 public:
     int instancesCount();
-    void update();
+    void update(float dT);
     void draw(const glm::mat4& view, const glm::mat4& projection);
     Emitter(int count);
     ~Emitter();
