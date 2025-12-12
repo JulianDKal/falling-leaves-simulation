@@ -3,7 +3,7 @@
 Leaf::Leaf(const glm::vec3& pos, float speedVariation)
 {
     position = pos;
-    fallingSpeed *= speedVariation;
+    velocity.y *= speedVariation;
 }
 
 void Leaf::setRotation(const glm::vec3 &newRotation)
@@ -26,7 +26,7 @@ void Leaf::update()
 
     model = glm::mat4(1.0f);
 
-    position.y -= fallingSpeed;
+    position += velocity;
     if(position.y < 0) position.y = 15.0f;
     model = glm::translate(model, position);
     model = glm::scale(model, glm::vec3(size));
