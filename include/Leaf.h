@@ -10,6 +10,7 @@ private:
     glm::vec3 position;
     glm::vec3 rotation;
     glm::vec3 velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 gravity = glm::vec3(0.0f, -9.81f, 0.0f);
 
     glm::mat4 model;
     float size = 0.6f;

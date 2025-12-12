@@ -26,8 +26,15 @@ void Leaf::update(float dT)
 
     model = glm::mat4(1.0f);
 
+    velocity += gravity * dT;
+
     position += velocity * dT;
-    if(position.y < 0) position.y = 15.0f;
+    if(position.y < 0) {
+        position.y = 15.0f;
+        velocity.x = 0;
+        velocity.y = 0;
+        velocity.z = 0;
+    }
     model = glm::translate(model, position);
     model = glm::scale(model, glm::vec3(size));
     
