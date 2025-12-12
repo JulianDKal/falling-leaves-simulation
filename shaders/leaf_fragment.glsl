@@ -8,5 +8,7 @@ uniform sampler2D leafTexture;
 void main()
 {
     // Sample the texture using UVs
-    fragmentColor = texture(leafTexture, TexCoord);
+    vec4 color = texture(leafTexture, TexCoord);
+    if(color.a < 0.5) discard;
+    fragmentColor = color;
 }

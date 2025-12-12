@@ -44,8 +44,8 @@ int main() {
         std::cerr << "SDL Init failed: " << SDL_GetError() << std::endl;
         return -1;
     }
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
     SDL_Window* window = SDL_CreateWindow("Falling Leaves Simulation",wWidth, wHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (!window) {
         std::cerr << "Window creation failed: " << SDL_GetError() << std::endl;
@@ -74,11 +74,7 @@ int main() {
 
     UI ui(window, context);
 
-    //enable transparency for leaf texture
-    glEnable(GL_BLEND);
-    //glEnable(GL_DEPTH_TEST);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+    glEnable(GL_DEPTH_TEST);
 
     bool show_demo_window = false;
     bool show_another_window = false;
@@ -226,8 +222,8 @@ int main() {
 
         glLineWidth(1.0f);
 
-        float time = SDL_GetTicks() / 1000.0f;
-        emitter.setTimeUniform(time);
+        // float time = SDL_GetTicks() / 1000.0f;
+        // emitter.setTimeUniform(time);
 
         //Actually draw all the leaves
         emitter.update(deltaTime);

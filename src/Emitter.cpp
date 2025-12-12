@@ -46,7 +46,7 @@ Emitter::Emitter(int count)
     numInstances = count;
 
 
-    leafShader.createProgram("./../shaders/leaf_vertex.glsl","./../shaders/leaf_pulse_fragment.glsl");
+    leafShader.createProgram("./../shaders/leaf_vertex.glsl","./../shaders/leaf_fragment.glsl");
     leafTexture.initialize("./../textures/leaf-texture1.png", 0);
 
 
