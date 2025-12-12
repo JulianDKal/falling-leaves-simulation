@@ -35,11 +35,21 @@ void Emitter::draw(const glm::mat4 &view, const glm::mat4 &projection)
 
 }
 
+void Emitter::setTimeUniform(float time)
+{
+    glUseProgram(leafShader.ID);        // make shader active
+    leafShader.setFloat("uTime", time); // set the uniform
+}
+
 Emitter::Emitter(int count)
 {
     numInstances = count;
-    leafShader.createProgram("./../shaders/leaf_vertex.glsl","./../shaders/leaf_fragment.glsl");
+
+
+    leafShader.createProgram("./../shaders/leaf_vertex.glsl","./../shaders/leaf_pulse_fragment.glsl");
     leafTexture.initialize("./../textures/leaf-texture1.png", 0);
+
+
 
     leaves.reserve(numInstances);
     transformations.reserve(numInstances);
@@ -123,3 +133,5 @@ void Emitter::updateTransformBuffer() {
 Emitter::~Emitter()
 {
 }
+
+

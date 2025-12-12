@@ -245,6 +245,9 @@ int main() {
 
         glLineWidth(1.0f);
 
+        float time = SDL_GetTicks() / 1000.0f;
+        emitter.setTimeUniform(time);
+
         //Actually draw all the leaves
         emitter.update(deltaTime);
         emitter.draw(view, projection);
