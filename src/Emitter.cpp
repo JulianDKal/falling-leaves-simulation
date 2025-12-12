@@ -15,7 +15,7 @@ void Emitter::update(float dT)
     for (int i = 0; i < leaves.size(); i++)
     {
         leaves[i].addRotation(glm::vec3 {0, rotationSpeed, rotationSpeed});
-        leaves[i].update();
+        leaves[i].update(dT);
         transformations[i] = leaves[i].getLeafModel();
     }
     updateTransformBuffer();

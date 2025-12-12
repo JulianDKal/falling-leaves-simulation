@@ -20,13 +20,13 @@ const glm::mat4 &Leaf::getLeafModel() const
     return model;
 }
 
-void Leaf::update()
+void Leaf::update(float dT)
 {
     getErrorCode();
 
     model = glm::mat4(1.0f);
 
-    position += velocity;
+    position += velocity * dT;
     if(position.y < 0) position.y = 15.0f;
     model = glm::translate(model, position);
     model = glm::scale(model, glm::vec3(size));
