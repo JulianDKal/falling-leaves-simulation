@@ -33,16 +33,6 @@ void Leaf::update(float dT)
 
     model = glm::mat4(1.0f);
 
-    force = gravity * mass;
-
-    acceleration = force / mass;
-
-    velocity += acceleration * dT;
-
-    velocity *= drag;
-
-    position += velocity * dT;
-
     if(position.y < 0) {
         position.y = 15.0f;
         velocity.x = 0;
@@ -59,6 +49,19 @@ void Leaf::update(float dT)
 
     // std::cout << rotation.x << " " << rotation.y << " " << rotation.z << std::endl;
     getErrorCode();
+}
+
+void Leaf::physicsUpdate(float fixedDT)
+{
+    force = gravity * mass;
+
+    acceleration = force / mass;
+
+    velocity += acceleration * fixedDT;
+
+    velocity *= drag;
+
+    position += velocity * fixedDT;
 }
 
 Leaf::~Leaf()

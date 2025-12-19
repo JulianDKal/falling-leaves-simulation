@@ -29,6 +29,7 @@ public:
     void addRotation(const glm::vec3& newRotation);
     const glm::mat4& getLeafModel() const;
     void update(float dT);
+    void physicsUpdate(float fixedDT);
     ~Leaf();    
 };
 
