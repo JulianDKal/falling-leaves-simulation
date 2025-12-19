@@ -111,21 +111,23 @@ Emitter::Emitter(int count)
     for (int i = 0; i < numInstances; i++)
     {
         glm::vec3 position {
-            posDist(gen) ,  // x: -10 to 10
-            (posDist(gen) + 10.0f) * 0.6,  // y: -10 to 10  
-            posDist(gen)   // z: -10 to 0
+            posDist(gen),               // x: -10 to 10
+            (posDist(gen) + 10.0f) * 0.6f,  // y: -10 to 10  
+            posDist(gen)                // z: -10 to 0
         };
         
         glm::vec3 rotation {
-            rotDist(gen),  // x rotation: -180 to 180 degrees
-            rotDist(gen),  // y rotation: -180 to 180 degrees
-            rotDist(gen)   // z rotation: -180 to 180 degrees
+            rotDist(gen),  // x rotation
+            rotDist(gen),  // y rotation
+            rotDist(gen)   // z rotation
         };
 
-        // glm::vec3 rotation {0.0f};
-        
-        Leaf l(position, speedDist(gen));
-        l.setRotation(rotation);
+        // Only downward velocity
+        glm::vec3 initialVelocity { 0.0f, -speedDist(gen), 0.0f };
+
+        // Use constructor with position, velocity, and rotation
+        Leaf l(position, initialVelocity, rotation);
+
         leaves.push_back(l);
     }
 }

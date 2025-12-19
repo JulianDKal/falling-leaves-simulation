@@ -6,6 +6,13 @@ Leaf::Leaf(const glm::vec3& pos, float speedVariation)
     velocity.y *= speedVariation;
 }
 
+Leaf::Leaf(const glm::vec3& pos, const glm::vec3& initialVelocity, const glm::vec3& initialRotation)
+{
+    position = pos;
+    velocity = initialVelocity;
+    rotation = initialRotation;
+}
+
 void Leaf::setRotation(const glm::vec3 &newRotation)
 {
     rotation = newRotation;
