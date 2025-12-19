@@ -100,7 +100,7 @@ int main() {
     gridTexture.initialize("./../textures/grid.jpg", 0);
 
     Camera cam;
-    Emitter emitter(10000);    
+    Emitter emitter(15000);    
 
     //Grid object setup
     unsigned int grid_VBO, grid_VAO;
@@ -142,8 +142,11 @@ int main() {
     bool running = true;
     float rotationSpeed = 0.3f;
 
+    lastFrameTime = SDL_GetPerformanceCounter();
+
     while (running)
     {
+
         //Calculate delta time
         currentTime = SDL_GetPerformanceCounter();
         //SDL_GetPerformanceFrequency is the resolution of the performance counter, could for example be 1 million for microseconds

@@ -9,11 +9,14 @@ class Leaf
 private:
     glm::vec3 position;
     glm::vec3 rotation;
+    glm::vec3 force = glm::vec3(0.0f);
     glm::vec3 velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 acceleration = glm::vec3(0.0f);
     glm::vec3 gravity = glm::vec3(0.0f, -9.81f, 0.0f);
 
     glm::mat4 model;
-    float drag = 0.66f;
+    float mass = 1.0f;
+    float drag = 0.9f;
     float size = 0.6f;
     float fallingSpeed = 0.02f;
     // unsigned int vao, vbo, ebo;

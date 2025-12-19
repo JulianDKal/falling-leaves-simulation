@@ -26,11 +26,16 @@ void Leaf::update(float dT)
 
     model = glm::mat4(1.0f);
 
-    velocity += gravity * dT;
+    force = gravity * mass;
+
+    acceleration = force / mass;
+
+    velocity += acceleration * dT;
 
     velocity *= drag;
 
     position += velocity * dT;
+
     if(position.y < 0) {
         position.y = 15.0f;
         velocity.x = 0;
