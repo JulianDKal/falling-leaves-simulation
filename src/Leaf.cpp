@@ -20,7 +20,7 @@ const glm::mat4 &Leaf::getLeafModel() const
     return model;
 }
 
-void Leaf::update()
+void Leaf::update(const EmitterParams& params)
 {
     getErrorCode();
 
@@ -29,7 +29,7 @@ void Leaf::update()
     position.y -= fallingSpeed;
     if(position.y < 0) position.y = 15.0f;
     model = glm::translate(model, position);
-    model = glm::scale(model, glm::vec3(size));
+    model = glm::scale(model, glm::vec3(params.size));
     
     
     model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));

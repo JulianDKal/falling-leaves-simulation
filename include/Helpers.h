@@ -3,6 +3,25 @@
 #include "GL/glew.h"
 #include "glm/glm.hpp"
 
+enum class EmitterShape {
+    boxShape,
+    circleShape
+};
+
+//This is the struct that gets passed to the UI and the Emitter. When the user interacts with the UI,
+//the instance of this struct that gets passed around changes. The emitter then applies these changes to the simulation
+//This also gets passed to the leaf update method
+struct EmitterParams {
+    glm::vec3 windForce;
+    float size = 1.0f; //Leaf size
+    bool spiralingMotion = false;
+    bool tumbling = false; 
+    int leafCount;
+    float emitRadius;
+    float emitHeight;
+    EmitterShape shape;
+};
+
 inline GLenum getErrorCode_(const char* file, int line) {
     GLenum errorCode;
     while((errorCode = glGetError()) != GL_NO_ERROR) {

@@ -4,25 +4,10 @@
 #include "imgui_impl_opengl3.h"
 #include "SDL3/SDL.h"
 #include "glm/glm.hpp"
+#include "Helpers.h"
 
 extern float wWidth;
 extern float wHeight;
-
-enum class EmitterShape {
-    boxShape,
-    circleShape
-};
-
-struct EmitterParams {
-    glm::vec3 windForce;
-    float size = 1.0f; //Leaf size
-    bool spiralingMotion = false;
-    bool tumbling = false; 
-    int leafCount;
-    float emitRadius;
-    float emitHeight;
-    EmitterShape shape;
-};
 
 class UI
 {

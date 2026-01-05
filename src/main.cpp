@@ -81,7 +81,7 @@ int main() {
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     EmitterParams emitterParams {
         glm::vec3(0.0f, 0.0f, 0.0f),  // windForce
-        1.0f,                          // size
+        0.6f,                          // size
         false,                         // spiralingMotion
         false,                         // tumbling
         10000,                         // leafCount
@@ -226,7 +226,7 @@ int main() {
         // emitter.setTimeUniform(time);
 
         //Actually draw all the leaves
-        emitter.update(deltaTime);
+        emitter.update(deltaTime, emitterParams);
         emitter.draw(view, projection);
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

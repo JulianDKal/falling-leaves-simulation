@@ -25,10 +25,6 @@ void UI::update(EmitterParams& emitterParams)
     ImGui::SetNextWindowSize(ImVec2{wWidth / 5, wHeight});
     ImGui::SetNextWindowPos(ImVec2{0, 0});
     
-    // ImGuiStyle& style = ImGui::GetStyle();
-    // style.Colors[ImGuiCol_WindowBg] = ImVec4{0, 0, 0, 240};
-    // style.Colors[ImGuiCol_TitleBg] = ImVec4(69, 69, 138, 240);
-    // Push colors for THIS window only
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4{0.0f, 0.0f, 0.0f, 0.94f});  // Black with slight transparency
     ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(69/255.0f, 69/255.0f, 138/255.0f, 0.94f));
     ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(89/255.0f, 89/255.0f, 158/255.0f, 0.94f));
@@ -139,7 +135,7 @@ void UI::update(EmitterParams& emitterParams)
     if (ImGui::Button("Reset to Defaults", ImVec2(-1, 0))) {
         emitterParams = EmitterParams{
             glm::vec3(0.0f, 0.0f, 0.0f),  // windForce
-            1.0f,                          // size
+            0.6f,                          // size
             false,                         // spiralingMotion
             false,                         // tumbling
             10000,                         // leafCount
@@ -149,7 +145,7 @@ void UI::update(EmitterParams& emitterParams)
         };
     }
 
-    ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+    ImGui::Checkbox("Demo Window", &show_demo_window);
     ImGui::Checkbox("Another Window", &show_another_window);
     ImGui::End();
 

@@ -5,12 +5,12 @@ int Emitter::instancesCount()
     return numInstances;
 }
 
-void Emitter::update(float dT)
+void Emitter::update(float dT, EmitterParams& params)
 {
     for (int i = 0; i < leaves.size(); i++)
     {
         leaves[i].addRotation(glm::vec3 {0, rotationSpeed, rotationSpeed});
-        leaves[i].update();
+        leaves[i].update(params);
         transformations[i] = leaves[i].getLeafModel();
     }
     updateTransformBuffer();
@@ -48,7 +48,6 @@ Emitter::Emitter(int count)
 
     leafShader.createProgram("./../shaders/leaf_vertex.glsl","./../shaders/leaf_fragment.glsl");
     leafTexture.initialize("./../textures/leaf-texture1.png", 0);
-
 
 
     leaves.reserve(numInstances);
