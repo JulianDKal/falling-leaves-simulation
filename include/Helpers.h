@@ -22,6 +22,21 @@ struct EmitterParams {
     EmitterShape shape;
 };
 
+inline std::vector<glm::vec3>* generateCirclePoints(int numOfPoints) {
+    float degToAdvance = 360.0f / (float)numOfPoints;
+    float currentDeg = 0;
+    std::vector<glm::vec3>* resultVec = new std::vector<glm::vec3>(numOfPoints);
+    for (int i = 0; i < numOfPoints; i++)
+    {
+        currentDeg = i * degToAdvance;
+        float xVal = cos(glm::radians(currentDeg));
+        float zVal = sin(glm::radians(currentDeg));
+        glm::vec3 newPoint = {xVal, 0, zVal};
+        resultVec->at(i) = newPoint;
+    }
+    return resultVec;
+}
+
 inline GLenum getErrorCode_(const char* file, int line) {
     GLenum errorCode;
     while((errorCode = glGetError()) != GL_NO_ERROR) {

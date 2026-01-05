@@ -100,14 +100,14 @@ Emitter::Emitter(int count)
         glVertexAttribDivisor(attribLocation, 1);
     }
 
-    
+    //TODO: Tie the emitterParams into this
     //Generate the vector of leaves with random starting positions
     for (int i = 0; i < numInstances; i++)
     {
         glm::vec3 position {
             posDist(gen) ,  // x: -10 to 10
-            (posDist(gen) + 10.0f) * 0.6,  // y: -10 to 10  
-            posDist(gen)   // z: -10 to 0
+            (posDist(gen) + 10.0f) * 0.6,  // y: -0 to 12
+            posDist(gen)   // z: -10 to 10
         };
         
         glm::vec3 rotation {

@@ -35,6 +35,13 @@ float zAxisVertices[] = {
     0.0f, 0.01f, 100.0f
 };
 
+float quadVertices[] = {
+    -1.0f, 0.0f, -1.0f,  
+     1.0f, 0.0f, -1.0f,  
+     1.0f, 0.0f,  1.0f,  
+    -1.0f, 0.0f,  1.0f 
+};
+
 double currentTime, lastFrameTime = 0.0;
 float deltaTime;
 
@@ -85,15 +92,18 @@ int main() {
         false,                         // spiralingMotion
         false,                         // tumbling
         10000,                         // leafCount
-        20.0f,                         // emitRadius
-        10.0f,                         // emitHeight
+        10.0f,                         // emitRadius
+        15.0f,                         // emitHeight
         EmitterShape::circleShape      // shape
     };
+
+    std::vector<glm::vec3>* circleVector = generateCirclePoints(24);
 
     Shader gridShader;
     gridShader.createProgram("./../shaders/grid_vertex.glsl", "./../shaders/grid_fragment.glsl");
     Shader lineShader;
     lineShader.createProgram("./../shaders/line_vertex.glsl", "./../shaders/line_fragment.glsl");
+
 
     Texture gridTexture;
     gridTexture.initialize("./../textures/grid.jpg", 0);
@@ -137,6 +147,35 @@ int main() {
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    //Circle Shape Object setup
+    unsigned int circleVBO, circleVAO;
+    glGenVertexArrays(1, &circleVAO);
+    glGenBuffers(1, &circleVBO);
+
+    glBindVertexArray(circleVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, circleVBO);
+    glBufferData(GL_ARRAY_BUFFER, circleVector->size() * 3 * sizeof(float), circleVector->data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    //Quad Shape Object Setup
+    unsigned int quadVBO, quadVAO;
+    glGenVertexArrays(1, &quadVAO);
+    glGenBuffers(1, &quadVBO);
+    
+    glBindVertexArray(quadVAO);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+    
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    //Unbind
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     
     bool running = true;
     float rotationSpeed = 0.3f;
@@ -208,6 +247,7 @@ int main() {
 
         glLineWidth(4.0f);
 
+        //Draw x and z Axis
         glBindVertexArray(xAxis_VAO);
         glUseProgram(lineShader.ID);
         lineShader.setVec3f("color", xColor);
@@ -220,10 +260,27 @@ int main() {
         lineShader.setVec3f("color", zColor);
         glDrawArrays(GL_LINES, 0, 2);
 
-        glLineWidth(1.0f);
+        //Draw the Gizmos Shape
+        glLineWidth(3.0f);
+        model = glm::translate(model, glm::vec3 {0, emitterParams.emitHeight, 0});
+        model = glm::scale(model, glm::vec3 {emitterParams.emitRadius});
+        lineShader.setMatrix4("model", model);
+        lineShader.setVec3f("color", xColor);
 
-        // float time = SDL_GetTicks() / 1000.0f;
-        // emitter.setTimeUniform(time);
+
+        if(emitterParams.shape == EmitterShape::circleShape) {
+
+            glBindVertexArray(circleVAO);
+            glDrawArrays(GL_LINE_LOOP, 0, circleVector->size());
+
+        }
+        else if(emitterParams.shape == EmitterShape::boxShape){
+            glBindVertexArray(quadVAO);
+            glDrawArrays(GL_LINE_LOOP, 0, sizeof(quadVertices) / 3 / 4);
+        }
+
+
+        glLineWidth(1.0f);
 
         //Actually draw all the leaves
         emitter.update(deltaTime, emitterParams);
