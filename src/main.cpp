@@ -89,6 +89,7 @@ int main() {
     EmitterParams emitterParams {
         glm::vec3(0.0f, 0.0f, 0.0f),  // windForce
         0.6f,                          // size
+        9.81f,                         // gravity
         false,                         // spiralingMotion
         false,                         // tumbling
         10000,                         // leafCount
@@ -206,6 +207,7 @@ int main() {
                 wHeight = event.window.data2;
                 glViewport(0, 0, wWidth, wHeight);
             }
+            //Don't react to clicks if they are already being handled by imgui
             if(io.WantCaptureMouse) {
                 continue;
             }

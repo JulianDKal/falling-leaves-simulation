@@ -53,6 +53,19 @@ void UI::update(EmitterParams& emitterParams)
 
     ImGui::Spacing();
 
+    ImGui::Text("Gravity:");
+    ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.6f);
+    
+    if (ImGui::InputFloat("##Gravity", &emitterParams.gravity, 1.0f, 100.0f, "%.1f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+    // Validate when Enter is pressed
+        emitterParams.gravity = glm::clamp(emitterParams.gravity, 1.0f, 100.0f);
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("(%f)", emitterParams.gravity);
+
+
+    ImGui::Spacing();
+
     // 2. Size
     ImGui::Text("Leaf Size:");
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.9f);
@@ -136,6 +149,7 @@ void UI::update(EmitterParams& emitterParams)
         emitterParams = EmitterParams{
             glm::vec3(0.0f, 0.0f, 0.0f),  // windForce
             0.6f,                          // size
+            9.81f,                         // gravity
             false,                         // spiralingMotion
             false,                         // tumbling
             10000,                         // leafCount
@@ -143,6 +157,16 @@ void UI::update(EmitterParams& emitterParams)
             100.0f,                        // emitHeight
             EmitterShape::circleShape      // shape
         };
+    }
+
+    ImGui::Spacing();
+    float width = (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x) / 2.0f;
+    if(ImGui::Button("Start", ImVec2{width, 0})){
+        //Start the simulation
+    }
+    ImGui::SameLine();
+    if(ImGui::Button("Stop", ImVec2{width, 0})){
+        //Stop the simulation
     }
 
     ImGui::Checkbox("Demo Window", &show_demo_window);

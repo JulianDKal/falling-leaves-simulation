@@ -2,11 +2,13 @@
 #include <iostream>
 #include "GL/glew.h"
 #include "glm/glm.hpp"
+#include <vector>
 
 enum class EmitterShape {
     boxShape,
     circleShape
 };
+
 
 //This is the struct that gets passed to the UI and the Emitter. When the user interacts with the UI,
 //the instance of this struct that gets passed around changes. The emitter then applies these changes to the simulation
@@ -14,6 +16,7 @@ enum class EmitterShape {
 struct EmitterParams {
     glm::vec3 windForce;
     float size = 1.0f; //Leaf size
+    float gravity = 9.81f;
     bool spiralingMotion = false;
     bool tumbling = false; 
     int leafCount;
@@ -22,6 +25,7 @@ struct EmitterParams {
     EmitterShape shape;
 };
 
+//Used to generate the vertex data for the circle shape gizmos
 inline std::vector<glm::vec3>* generateCirclePoints(int numOfPoints) {
     float degToAdvance = 360.0f / (float)numOfPoints;
     float currentDeg = 0;

@@ -4,6 +4,8 @@
 #include "glm/glm.hpp"
 #include <random>
 #include "Helpers.h"
+#include "Profiler.h"
+#include <iostream>
 
 static float leafVertices[] = {
     //   position                        UV

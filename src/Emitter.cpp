@@ -7,6 +7,7 @@ int Emitter::instancesCount()
 
 void Emitter::update(float dT, EmitterParams& params)
 {
+    Profiler::Start();
     for (int i = 0; i < leaves.size(); i++)
     {
         leaves[i].addRotation(glm::vec3 {0, rotationSpeed, rotationSpeed});
@@ -14,6 +15,7 @@ void Emitter::update(float dT, EmitterParams& params)
         transformations[i] = leaves[i].getLeafModel();
     }
     updateTransformBuffer();
+    Profiler::Stop(100);
 }
 
 void Emitter::draw(const glm::mat4 &view, const glm::mat4 &projection)
@@ -36,7 +38,7 @@ void Emitter::draw(const glm::mat4 &view, const glm::mat4 &projection)
 }
 
 void Emitter::setTimeUniform(float time)
-{
+{ 
     glUseProgram(leafShader.ID);        // make shader active
     leafShader.setFloat("uTime", time); // set the uniform
 }
