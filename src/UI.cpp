@@ -89,7 +89,6 @@ void UI::update(EmitterParams& emitterParams)
 
     ImGui::Spacing();
 
-    // 4. Leaf Count with logarithmic slider (1 to 1 million)
     ImGui::Text("Leaf Count:");
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.6f);
 
@@ -104,15 +103,16 @@ void UI::update(EmitterParams& emitterParams)
     ImGui::SameLine();
     ImGui::TextDisabled("(%d)", emitterParams.leafCount);
 
-    // Alternative: Regular slider with power curve
-    // ImGui::SliderFloat("##leafCount", &emitterParams.leafCount, 1.0f, 1000000.0f, "%.0f", ImGuiSliderFlags_Logarithmic);
-
     ImGui::Spacing();
 
     // 5. Emit Radius
     ImGui::Text("Emit Radius:");
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.9f);
-    ImGui::SliderFloat("##emitRadius", &emitterParams.emitRadius, 0.1f, 100.0f, "%.1f m");
+    if(ImGui::SliderFloat("##emitRadius", &emitterParams.emitRadius, 0.1f, 100.0f, "%.1f m")){
+        SDL_Event event {.type = EMIT_RADIUS_CHANGED_EVENT}; 
+        SDL_PushEvent(&event);
+
+    }
     ImGui::PopItemWidth();
 
     ImGui::Spacing();

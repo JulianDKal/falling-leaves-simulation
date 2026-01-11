@@ -36,10 +36,11 @@ private:
     void updateTransformBuffer();
 public:
     int instancesCount();
-    void update(float dT, EmitterParams& params);
+    void update(float dT, const EmitterParams& params);
     void draw(const glm::mat4& view, const glm::mat4& projection);
     void setTimeUniform(float time);
-    void resizeParticleCount(EmitterParams& params);
-    Emitter(int count);
+    void resizeParticleCount(const EmitterParams& params);
+    void changeEmitArea(const EmitterParams& params);
+    Emitter(const EmitterParams& params);
     ~Emitter();
 };

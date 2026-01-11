@@ -111,7 +111,7 @@ int main() {
     gridTexture.initialize("./../textures/grid.jpg", 0);
 
     Camera cam;
-    Emitter emitter(emitterParams.leafCount);    
+    Emitter emitter(emitterParams);    
 
     //Grid object setup
     unsigned int grid_VBO, grid_VAO;
@@ -246,6 +246,9 @@ int main() {
             }
             else if(event.type == PARTICLE_COUNT_UPDATED_EVENT) {
                 emitter.resizeParticleCount(emitterParams);
+            }
+            else if(event.type == EMIT_RADIUS_CHANGED_EVENT) {
+                emitter.changeEmitArea(emitterParams);
             }
         }
 
