@@ -198,7 +198,10 @@ Leaf Emitter::createLeaf(const EmitterParams &params, std::mt19937 &gen,
     else if(params.shape == EmitterShape::circleShape) {
         position = glm::vec3{1, 0, 0};
         glm::quat rotation = glm::angleAxis(glm::radians(rotDist(gen)), glm::vec3{0, 1, 0});
-        position = rotation * position * oneDist(gen) * params.emitRadius + glm::vec3{0, spawnHeight, 0};
+
+        // Correct uniform distribution over the circle
+        float r = sqrt(oneDist(gen)) * params.emitRadius;
+        position = rotation * position * r + glm::vec3{0, spawnHeight, 0};
     }
 
     glm::vec3 rotation = generateRandomRotation(gen, rotDist);
