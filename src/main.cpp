@@ -247,7 +247,7 @@ int main() {
             else if(event.type == PARTICLE_COUNT_UPDATED_EVENT) {
                 emitter.resizeParticleCount(emitterParams);
             }
-            else if(event.type == EMIT_RADIUS_CHANGED_EVENT) {
+            else if(event.type == EMIT_AREA_CHANGED_EVENT) {
                 emitter.changeEmitArea(emitterParams);
             }
         }

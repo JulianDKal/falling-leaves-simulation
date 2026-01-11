@@ -49,19 +49,27 @@ void Emitter::resizeParticleCount(const EmitterParams &params)
     
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> posDist(-10.0f, 10.0f);    // Position range
+    std::uniform_real_distribution<float> posDist(-params.emitRadius, params.emitRadius); // Position range
     std::uniform_real_distribution<float> rotDist(0.0f, 360.0f); 
     std::uniform_real_distribution<float> speedDist(0.5f, 4.0f);
+    std::uniform_real_distribution<float> oneDist(0.0f, 1.0f);
 
-    
     leaves.resize(params.leafCount);
+    glm::vec3 position;
     for (int i = numInstances; i < params.leafCount; i++)
     {
-        glm::vec3 position {
-            posDist(gen) ,  // x: -10 to 10
-            (posDist(gen) + 10.0f) * 0.6,  // y: -0 to 12
-            posDist(gen)   // z: -10 to 10
-        };
+        if(params.shape == EmitterShape::boxShape) {
+            position = glm::vec3{
+                posDist(gen) ,
+                params.emitHeight,
+                posDist(gen)
+            };
+        }
+        else if(params.shape == EmitterShape::circleShape) {
+            position = glm::vec3{1, 0, 0};
+            glm::quat rotation = glm::angleAxis(glm::radians(rotDist(gen)), glm::vec3{0, 1, 0});
+            position = rotation * position * oneDist(gen) * params.emitRadius + glm::vec3{0, params.emitHeight, 0};
+        }
         glm::vec3 rotation {
             rotDist(gen),  // x rotation: -180 to 180 degrees
             rotDist(gen),  // y rotation: -180 to 180 degrees
@@ -85,28 +93,31 @@ void Emitter::changeEmitArea(const EmitterParams &params)
 {
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> posDist;
-    if(params.shape == EmitterShape::boxShape){
-        posDist = std::uniform_real_distribution<float>(-params.emitRadius, params.emitRadius);    // Position range
-    }
-    else if(params.shape == EmitterShape::circleShape){
-        posDist = std::uniform_real_distribution<float>(-params.emitRadius, params.emitRadius);    // Position range
-    }
+    std::uniform_real_distribution<float> posDist(-params.emitRadius, params.emitRadius);
     std::uniform_real_distribution<float> speedDist(0.5f, 4.0f);
-    std::uniform_real_distribution<float> rotDist(0.0f, 360.0f); 
+    std::uniform_real_distribution<float> rotDist(0.0f, 360.0f);
+    std::uniform_real_distribution<float> oneDist(0.0f, 1.0f);
 
+    glm::vec3 position;
     for (int i = 0; i < numInstances; i++)
     {
-        glm::vec3 position {
-            posDist(gen) ,
-            params.emitHeight,
-            posDist(gen)
-        };
+        if(params.shape == EmitterShape::boxShape) {
+            position = glm::vec3{
+                posDist(gen) ,
+                params.emitHeight,
+                posDist(gen)
+            };
+        }
+        else if(params.shape == EmitterShape::circleShape) {
+            position = glm::vec3{1, 0, 0};
+            glm::quat rotation = glm::angleAxis(glm::radians(rotDist(gen)), glm::vec3{0, 1, 0});
+            position = rotation * position * oneDist(gen) * params.emitRadius + glm::vec3{0, params.emitHeight, 0};
+        }
         
         glm::vec3 rotation {
-            rotDist(gen),  // x rotation: -180 to 180 degrees
-            rotDist(gen),  // y rotation: -180 to 180 degrees
-            rotDist(gen)   // z rotation: -180 to 180 degrees
+            rotDist(gen),  
+            rotDist(gen),
+            rotDist(gen)
         };
 
         Leaf l{position, speedDist(gen)};

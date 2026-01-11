@@ -109,7 +109,7 @@ void UI::update(EmitterParams& emitterParams)
     ImGui::Text("Emit Radius:");
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.9f);
     if(ImGui::SliderFloat("##emitRadius", &emitterParams.emitRadius, 0.1f, 100.0f, "%.1f m")){
-        SDL_Event event {.type = EMIT_RADIUS_CHANGED_EVENT}; 
+        SDL_Event event {.type = EMIT_AREA_CHANGED_EVENT}; 
         SDL_PushEvent(&event);
 
     }
@@ -133,10 +133,16 @@ void UI::update(EmitterParams& emitterParams)
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
     if (ImGui::RadioButton("Circle", emitterParams.shape == EmitterShape::circleShape)) {
         emitterParams.shape = EmitterShape::circleShape;
+        SDL_Event event {.type = EMIT_AREA_CHANGED_EVENT}; 
+        SDL_PushEvent(&event);
+
     }
     ImGui::SameLine();
     if (ImGui::RadioButton("Box", emitterParams.shape == EmitterShape::boxShape)) {
         emitterParams.shape = EmitterShape::boxShape;
+        SDL_Event event {.type = EMIT_AREA_CHANGED_EVENT}; 
+        SDL_PushEvent(&event);
+
     }
     ImGui::PopStyleVar();
     ImGui::Unindent(10.0f);
