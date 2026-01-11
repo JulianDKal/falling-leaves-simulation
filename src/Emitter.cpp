@@ -12,6 +12,15 @@ void Emitter::update(float dT)
     // Set the uniform once per frame
     setTimeUniform(totalTime);
 
+    // --- Fixed timestep physics ---
+    physicsAccumulator += dT;
+
+    while (physicsAccumulator >= fixedDT)
+    {
+        fixedUpdatePhysics(fixedDT);
+        physicsAccumulator -= fixedDT;
+    }
+
     for (int i = 0; i < leaves.size(); i++)
     {
         leaves[i].addRotation(glm::vec3 {0, rotationSpeed, rotationSpeed});
@@ -19,6 +28,14 @@ void Emitter::update(float dT)
         transformations[i] = leaves[i].getLeafModel();
     }
     updateTransformBuffer();
+}
+
+void Emitter::fixedUpdatePhysics(float fixedDT)
+{
+    for (auto& leaf : leaves)
+    {
+        leaf.physicsUpdate(fixedDT); // physics-only update
+    }
 }
 
 void Emitter::draw(const glm::mat4 &view, const glm::mat4 &projection)

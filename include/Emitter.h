@@ -30,10 +30,13 @@ private:
 
     float rotationSpeed = 0.3f;
     float totalTime;
+    float physicsAccumulator = 0.0f; // for fixed timestep
+    const float fixedDT = 0.016f; // for fixed timestep
     void updateTransformBuffer();
 public:
     int instancesCount();
     void update(float dT);
+    void fixedUpdatePhysics(float fixedDT);
     void draw(const glm::mat4& view, const glm::mat4& projection);
     void setTimeUniform(float time);
     Emitter(int count);
