@@ -3,6 +3,10 @@
 #include "Leaf.h"
 #include "glm/glm.hpp"
 #include <random>
+#include "Helpers.h"
+#include "Profiler.h"
+#include <iostream>
+#include <utility>
 
 static float leafVertices[] = {
     //   position                        UV
@@ -35,10 +39,13 @@ private:
     void updateTransformBuffer();
 public:
     int instancesCount();
-    void update(float dT);
+
     void fixedUpdatePhysics(float fixedDT);
+    void update(float dT, const EmitterParams& params);
     void draw(const glm::mat4& view, const glm::mat4& projection);
     void setTimeUniform(float time);
-    Emitter(int count);
+    void resizeParticleCount(const EmitterParams& params);
+    void changeEmitArea(const EmitterParams& params);
+    Emitter(const EmitterParams& params);
     ~Emitter();
 };

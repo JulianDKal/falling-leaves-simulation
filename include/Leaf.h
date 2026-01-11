@@ -2,7 +2,7 @@
 #include "glm/glm.hpp"
 #include "GL/glew.h"
 #include "Shader.h"
-
+#include "Helpers.h"
 
 class Leaf
 {
@@ -22,14 +22,15 @@ private:
     // unsigned int vao, vbo, ebo;
     
 public:
+    Leaf() = default;
     Leaf(const glm::vec3& pos, float speedVariation);
     // New constructor (custom velocity)
     Leaf(const glm::vec3& pos, const glm::vec3& initialVelocity, const glm::vec3& initialRotation);
     void setRotation(const glm::vec3& newRotation);
     void addRotation(const glm::vec3& newRotation);
     const glm::mat4& getLeafModel() const;
-    void update(float dT);
     void physicsUpdate(float fixedDT);
+    void update(const EmitterParams& params);
     ~Leaf();    
 };
 

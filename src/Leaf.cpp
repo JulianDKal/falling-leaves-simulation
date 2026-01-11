@@ -27,20 +27,20 @@ const glm::mat4 &Leaf::getLeafModel() const
     return model;
 }
 
-void Leaf::update(float dT)
+void Leaf::update(const EmitterParams& params)
 {
     getErrorCode();
 
     model = glm::mat4(1.0f);
 
     if(position.y < 0) {
-        position.y = 15.0f;
+        position.y = params.emitHeight;
         velocity.x = 0;
         velocity.y = 0;
         velocity.z = 0;
     }
     model = glm::translate(model, position);
-    model = glm::scale(model, glm::vec3(size));
+    model = glm::scale(model, glm::vec3(params.size));
     
     
     model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));

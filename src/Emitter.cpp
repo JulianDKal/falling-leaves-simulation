@@ -5,7 +5,7 @@ int Emitter::instancesCount()
     return numInstances;
 }
 
-void Emitter::update(float dT)
+void Emitter::update(float dT, const EmitterParams& params)
 {
     totalTime += dT;  // accumulate
 
@@ -20,14 +20,15 @@ void Emitter::update(float dT)
         fixedUpdatePhysics(fixedDT);
         physicsAccumulator -= fixedDT;
     }
-
-    for (int i = 0; i < leaves.size(); i++)
+    Profiler::Start();
+    for (int i = 0; i < numInstances; i++)
     {
         leaves[i].addRotation(glm::vec3 {0, rotationSpeed, rotationSpeed});
-        leaves[i].update(dT);
+        leaves[i].update(params);
         transformations[i] = leaves[i].getLeafModel();
     }
     updateTransformBuffer();
+    Profiler::Stop(100);
 }
 
 void Emitter::fixedUpdatePhysics(float fixedDT)
@@ -58,30 +59,109 @@ void Emitter::draw(const glm::mat4 &view, const glm::mat4 &projection)
 }
 
 void Emitter::setTimeUniform(float time)
-{
+{ 
     glUseProgram(leafShader.ID);        // make shader active
     leafShader.setFloat("uTime", time); // set the uniform
 }
 
-Emitter::Emitter(int count)
+void Emitter::resizeParticleCount(const EmitterParams &params)
 {
-    numInstances = count;
-
-
-    leafShader.createProgram("./../shaders/leaf_vertex.glsl","./../shaders/leaf_pulse_fragment.glsl");
-    leafTexture.initialize("./../textures/leaf-texture1.png", 0);
-
-
-
-    leaves.reserve(numInstances);
-    transformations.reserve(numInstances);
-    transformations.resize(numInstances, glm::mat4(1.0));
-
+    if(numInstances == params.leafCount) return; //Nothing to do
+    
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> posDist(-10.0f, 10.0f);    // Position range
+    std::uniform_real_distribution<float> posDist(-params.emitRadius, params.emitRadius); // Position range
     std::uniform_real_distribution<float> rotDist(0.0f, 360.0f); 
     std::uniform_real_distribution<float> speedDist(0.5f, 4.0f);
+    std::uniform_real_distribution<float> oneDist(0.0f, 1.0f);
+
+    leaves.resize(params.leafCount);
+    glm::vec3 position;
+    for (int i = numInstances; i < params.leafCount; i++)
+    {
+        if(params.shape == EmitterShape::boxShape) {
+            position = glm::vec3{
+                posDist(gen) ,
+                params.emitHeight,
+                posDist(gen)
+            };
+        }
+        else if(params.shape == EmitterShape::circleShape) {
+            position = glm::vec3{1, 0, 0};
+            glm::quat rotation = glm::angleAxis(glm::radians(rotDist(gen)), glm::vec3{0, 1, 0});
+            position = rotation * position * oneDist(gen) * params.emitRadius + glm::vec3{0, params.emitHeight, 0};
+        }
+        glm::vec3 rotation {
+            rotDist(gen),  // x rotation: -180 to 180 degrees
+            rotDist(gen),  // y rotation: -180 to 180 degrees
+            rotDist(gen)   // z rotation: -180 to 180 degrees
+        };
+
+        Leaf l{position, speedDist(gen)};
+        l.setRotation(rotation);
+        leaves[i] = std::move(l);
+    }
+    
+    transformations.resize(params.leafCount, glm::mat4(1.0));
+    numInstances = params.leafCount;
+    glBindBuffer(GL_ARRAY_BUFFER, transformationsVBO);
+    glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(glm::mat4), transformations.data(), GL_DYNAMIC_DRAW);
+
+    std::cout << "Emitter buffers resized!" << std::endl;
+}
+
+void Emitter::changeEmitArea(const EmitterParams &params)
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> posDist(-params.emitRadius, params.emitRadius);
+    std::uniform_real_distribution<float> speedDist(0.5f, 4.0f);
+    std::uniform_real_distribution<float> rotDist(0.0f, 360.0f);
+    std::uniform_real_distribution<float> oneDist(0.0f, 1.0f);
+
+    glm::vec3 position;
+    for (int i = 0; i < numInstances; i++)
+    {
+        if(params.shape == EmitterShape::boxShape) {
+            position = glm::vec3{
+                posDist(gen) ,
+                params.emitHeight,
+                posDist(gen)
+            };
+        }
+        else if(params.shape == EmitterShape::circleShape) {
+            position = glm::vec3{1, 0, 0};
+            glm::quat rotation = glm::angleAxis(glm::radians(rotDist(gen)), glm::vec3{0, 1, 0});
+            position = rotation * position * oneDist(gen) * params.emitRadius + glm::vec3{0, params.emitHeight, 0};
+        }
+        
+        glm::vec3 rotation {
+            rotDist(gen),  
+            rotDist(gen),
+            rotDist(gen)
+        };
+
+        Leaf l{position, speedDist(gen)};
+        l.setRotation(rotation);
+        // leaves.emplace_back(Leaf{position, speedDist(gen)});
+        leaves[i] = std::move(l);
+    }
+
+    std::cout << "Emit Area changed!" << std::endl;
+}
+
+Emitter::Emitter(const EmitterParams& params)
+{
+    numInstances = params.leafCount;
+    std::cout << numInstances << std::endl;
+
+    leafShader.createProgram("./../shaders/leaf_vertex.glsl","./../shaders/leaf_fragment.glsl");
+    leafTexture.initialize("./../textures/leaf-texture1.png", 0);
+
+    leaves.reserve(numInstances);
+    leaves.resize(numInstances);
+    transformations.reserve(numInstances);
+    transformations.resize(numInstances, glm::mat4(1.0));
 
     //Generate buffers for the leaf object that will be used for instancing
     glGenVertexArrays(1, &leafVAO);
@@ -107,8 +187,7 @@ Emitter::Emitter(int count)
     glBindBuffer(GL_ARRAY_BUFFER, transformationsVBO);
     
     // Allocate buffer memory for all transformation matrices
-    glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(glm::mat4), 
-                 nullptr, GL_DYNAMIC_DRAW); 
+    glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(glm::mat4), nullptr, GL_DYNAMIC_DRAW); 
     
     //Have to do this 4 times because apparently we can't make a matrix take up one attribute slot
     for (int i = 0; i < 4; i++) {
@@ -123,30 +202,7 @@ Emitter::Emitter(int count)
         glVertexAttribDivisor(attribLocation, 1);
     }
 
-    
-    //Generate the vector of leaves with random starting positions
-    for (int i = 0; i < numInstances; i++)
-    {
-        glm::vec3 position {
-            posDist(gen),               // x: -10 to 10
-            (posDist(gen) + 10.0f) * 0.6f,  // y: -10 to 10  
-            posDist(gen)                // z: -10 to 0
-        };
-        
-        glm::vec3 rotation {
-            rotDist(gen),  // x rotation
-            rotDist(gen),  // y rotation
-            rotDist(gen)   // z rotation
-        };
-
-        // Only downward velocity
-        glm::vec3 initialVelocity { 0.0f, -speedDist(gen), 0.0f };
-
-        // Use constructor with position, velocity, and rotation
-        Leaf l(position, initialVelocity, rotation);
-
-        leaves.push_back(l);
-    }
+    changeEmitArea(params);
 }
 
 void Emitter::updateTransformBuffer() {

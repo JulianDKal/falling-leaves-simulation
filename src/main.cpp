@@ -13,6 +13,8 @@
 #include "Random.h"
 #include "Camera.h"
 #include "Emitter.h"
+#include "UI.h"
+#include "SDL3/SDL_events.h"
 
 float wWidth = 1920.0f;
 float wHeight = 1080.0f;
@@ -34,16 +36,25 @@ float zAxisVertices[] = {
     0.0f, 0.01f, 100.0f
 };
 
+float quadVertices[] = {
+    -1.0f, 0.0f, -1.0f,  
+     1.0f, 0.0f, -1.0f,  
+     1.0f, 0.0f,  1.0f,  
+    -1.0f, 0.0f,  1.0f 
+};
+
 double currentTime, lastFrameTime = 0.0;
 float deltaTime;
+bool simulationRunning = false;
 
 int main() {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0) {
         std::cerr << "SDL Init failed: " << SDL_GetError() << std::endl;
         return -1;
     }
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
     SDL_Window* window = SDL_CreateWindow("Falling Leaves Simulation",wWidth, wHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (!window) {
         std::cerr << "Window creation failed: " << SDL_GetError() << std::endl;
@@ -70,26 +81,26 @@ int main() {
 
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 
-    // Setup ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    // Setup ImGui style
-    ImGui::StyleColorsDark();
-    // Setup Platform/Renderer backends
-    ImGui_ImplSDL3_InitForOpenGL(window, context);
-    ImGui_ImplOpenGL3_Init("#version 330");
+    UI ui(window, context);
 
-    //enable transparency for leaf texture
-    glEnable(GL_BLEND);
-    //glEnable(GL_DEPTH_TEST);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+    glEnable(GL_DEPTH_TEST);
 
     bool show_demo_window = false;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    EmitterParams emitterParams {
+        glm::vec3(0.0f, 0.0f, 0.0f),  // windForce
+        0.6f,                          // size
+        9.81f,                         // gravity
+        false,                         // spiralingMotion
+        false,                         // tumbling
+        1000,                         // leafCount
+        10.0f,                         // emitRadius
+        15.0f,                         // emitHeight
+        EmitterShape::circleShape      // shape
+    };
+
+    std::vector<glm::vec3>* circleVector = generateCirclePoints(24);
 
     Shader gridShader;
     gridShader.createProgram("./../shaders/grid_vertex.glsl", "./../shaders/grid_fragment.glsl");
@@ -100,7 +111,8 @@ int main() {
     gridTexture.initialize("./../textures/grid.jpg", 0);
 
     Camera cam;
-    Emitter emitter(15000);    
+
+    Emitter emitter(emitterParams);    
 
     //Grid object setup
     unsigned int grid_VBO, grid_VAO;
@@ -138,6 +150,35 @@ int main() {
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    //Circle Shape Object setup
+    unsigned int circleVBO, circleVAO;
+    glGenVertexArrays(1, &circleVAO);
+    glGenBuffers(1, &circleVBO);
+
+    glBindVertexArray(circleVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, circleVBO);
+    glBufferData(GL_ARRAY_BUFFER, circleVector->size() * 3 * sizeof(float), circleVector->data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    //Quad Shape Object Setup
+    unsigned int quadVBO, quadVAO;
+    glGenVertexArrays(1, &quadVAO);
+    glGenBuffers(1, &quadVBO);
+    
+    glBindVertexArray(quadVAO);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+    
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    //Unbind
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     
     bool running = true;
     float rotationSpeed = 0.3f;
@@ -149,18 +190,31 @@ int main() {
 
         //Calculate delta time
         currentTime = SDL_GetPerformanceCounter();
-        //SDL_GetPerformanceFrequency is the resolution of the performance counter, could for example be 1 million for microseconds
+        //SDL_GetPerformanceFrequency is the resolution of the performance counter, 
+        //could for example be 1 million for microseconds, 1 billion for nanoseconds etc.
         deltaTime = (currentTime - lastFrameTime) / SDL_GetPerformanceFrequency(); 
         lastFrameTime = currentTime;
 
         //std::cout << deltaTime << " " << deltaTime / SDL_GetPerformanceFrequency() << " " << SDL_GetPerformanceFrequency() << std::endl;
+        // std::cout << START_SIMULATION_EVENT << " " << STOP_SIMULATION_EVENT << std::endl;
 
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
+            ImGuiIO& io = ImGui::GetIO();
             ImGui_ImplSDL3_ProcessEvent(&event);
+
             if(event.type == SDL_EVENT_QUIT) {
                 running = false;
+            }
+            if(event.type == SDL_EVENT_WINDOW_RESIZED){
+                wWidth = event.window.data1;
+                wHeight = event.window.data2;
+                glViewport(0, 0, wWidth, wHeight);
+            }
+            //Don't react to clicks if they are already being handled by imgui
+            if(io.WantCaptureMouse) {
+                continue;
             }
             //Pan right and left with the mouse and rotate around the object
             else if(event.type == SDL_EVENT_MOUSE_MOTION){
@@ -174,49 +228,32 @@ int main() {
             }
         }
 
-        //acc, speed, pos
-        //AddForce(10) --> acc geupdated
-        //speed += acc * deltaTime;
-        //pos += speed * deltaTime;
-
-
         glClearColor(1, 1, 1, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        ImGui_ImplSDL3_NewFrame();
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui::NewFrame();
-
-        if(show_demo_window) ImGui::ShowDemoWindow();
 
         cam.update();
 
         glm::mat4 view = cam.getViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1280.0f/720.0f, 0.1f, 100.0f);
 
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
-        {
-            static float f = 0.0f;
-            static int counter = 0;
+        ui.update(emitterParams);
 
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
-
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::End();
+        while (SDL_PollEvent(&event)) {
+            if(event.type == START_SIMULATION_EVENT) {
+                std::cout << "Start the simulation event received!" << std::endl;
+                simulationRunning = true;
+            }
+            else if(event.type == STOP_SIMULATION_EVENT) {
+                std::cout << "Stop the simulation event received!" << std::endl;
+                simulationRunning = false;
+            }
+            else if(event.type == PARTICLE_COUNT_UPDATED_EVENT) {
+                emitter.resizeParticleCount(emitterParams);
+            }
+            else if(event.type == EMIT_AREA_CHANGED_EVENT) {
+                emitter.changeEmitArea(emitterParams);
+            }
         }
-        ImGui::Render();
 
         glm::mat4 model = glm::mat4(1.0f);
 
@@ -234,6 +271,7 @@ int main() {
 
         glLineWidth(4.0f);
 
+        //Draw x and z Axis
         glBindVertexArray(xAxis_VAO);
         glUseProgram(lineShader.ID);
         lineShader.setVec3f("color", xColor);
@@ -246,11 +284,32 @@ int main() {
         lineShader.setVec3f("color", zColor);
         glDrawArrays(GL_LINES, 0, 2);
 
+        //Draw the Gizmos Shape
+        glLineWidth(3.0f);
+        model = glm::translate(model, glm::vec3 {0, emitterParams.emitHeight, 0});
+        model = glm::scale(model, glm::vec3 {emitterParams.emitRadius});
+        lineShader.setMatrix4("model", model);
+        lineShader.setVec3f("color", xColor);
+
+
+        if(emitterParams.shape == EmitterShape::circleShape) {
+            glBindVertexArray(circleVAO);
+            glDrawArrays(GL_LINE_LOOP, 0, circleVector->size());
+
+        }
+        else if(emitterParams.shape == EmitterShape::boxShape){
+            glBindVertexArray(quadVAO);
+            glDrawArrays(GL_LINE_LOOP, 0, sizeof(quadVertices) / 3 / 4);
+        }
+
+
         glLineWidth(1.0f);
 
         //Actually draw all the leaves
-        emitter.update(deltaTime);
-        emitter.draw(view, projection);
+        if(simulationRunning) {
+            emitter.update(deltaTime, emitterParams);
+            emitter.draw(view, projection);
+        }
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
