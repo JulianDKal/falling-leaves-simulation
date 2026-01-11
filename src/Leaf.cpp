@@ -3,6 +3,7 @@
 Leaf::Leaf(const glm::vec3& pos, float speedVariation)
 {
     position = pos;
+    rotation = glm::vec3{0,0,0};
     fallingSpeed *= speedVariation;
 }
 

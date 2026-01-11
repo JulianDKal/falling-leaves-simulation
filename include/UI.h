@@ -5,6 +5,7 @@
 #include "SDL3/SDL.h"
 #include "glm/glm.hpp"
 #include "Helpers.h"
+#include "UserEvents.h"
 
 extern float wWidth;
 extern float wHeight;

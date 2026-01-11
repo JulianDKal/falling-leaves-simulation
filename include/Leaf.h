@@ -14,6 +14,7 @@ private:
     // unsigned int vao, vbo, ebo;
     
 public:
+    Leaf() = default;
     Leaf(const glm::vec3& pos, float speedVariation);
     void setRotation(const glm::vec3& newRotation);
     void addRotation(const glm::vec3& newRotation);

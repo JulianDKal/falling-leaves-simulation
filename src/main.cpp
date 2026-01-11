@@ -14,6 +14,7 @@
 #include "Camera.h"
 #include "Emitter.h"
 #include "UI.h"
+#include "SDL3/SDL_events.h"
 
 float wWidth = 1920.0f;
 float wHeight = 1080.0f;
@@ -44,13 +45,14 @@ float quadVertices[] = {
 
 double currentTime, lastFrameTime = 0.0;
 float deltaTime;
-
+bool simulationRunning = false;
 
 int main() {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) < 0) {
         std::cerr << "SDL Init failed: " << SDL_GetError() << std::endl;
         return -1;
     }
+    
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
     SDL_Window* window = SDL_CreateWindow("Falling Leaves Simulation",wWidth, wHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
@@ -92,7 +94,7 @@ int main() {
         9.81f,                         // gravity
         false,                         // spiralingMotion
         false,                         // tumbling
-        10000,                         // leafCount
+        1000,                         // leafCount
         10.0f,                         // emitRadius
         15.0f,                         // emitHeight
         EmitterShape::circleShape      // shape
@@ -105,12 +107,11 @@ int main() {
     Shader lineShader;
     lineShader.createProgram("./../shaders/line_vertex.glsl", "./../shaders/line_fragment.glsl");
 
-
     Texture gridTexture;
     gridTexture.initialize("./../textures/grid.jpg", 0);
 
     Camera cam;
-    Emitter emitter(10000);    
+    Emitter emitter(emitterParams.leafCount);    
 
     //Grid object setup
     unsigned int grid_VBO, grid_VAO;
@@ -192,12 +193,13 @@ int main() {
         lastFrameTime = currentTime;
 
         //std::cout << deltaTime << " " << deltaTime / SDL_GetPerformanceFrequency() << " " << SDL_GetPerformanceFrequency() << std::endl;
+        // std::cout << START_SIMULATION_EVENT << " " << STOP_SIMULATION_EVENT << std::endl;
 
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            ImGui_ImplSDL3_ProcessEvent(&event);
             ImGuiIO& io = ImGui::GetIO();
+            ImGui_ImplSDL3_ProcessEvent(&event);
 
             if(event.type == SDL_EVENT_QUIT) {
                 running = false;
@@ -232,6 +234,20 @@ int main() {
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1280.0f/720.0f, 0.1f, 100.0f);
 
         ui.update(emitterParams);
+
+        while (SDL_PollEvent(&event)) {
+            if(event.type == START_SIMULATION_EVENT) {
+                std::cout << "Start the simulation event received!" << std::endl;
+                simulationRunning = true;
+            }
+            else if(event.type == STOP_SIMULATION_EVENT) {
+                std::cout << "Stop the simulation event received!" << std::endl;
+                simulationRunning = false;
+            }
+            else if(event.type == PARTICLE_COUNT_UPDATED_EVENT) {
+                emitter.resizeParticleCount(emitterParams);
+            }
+        }
 
         glm::mat4 model = glm::mat4(1.0f);
 
@@ -271,7 +287,6 @@ int main() {
 
 
         if(emitterParams.shape == EmitterShape::circleShape) {
-
             glBindVertexArray(circleVAO);
             glDrawArrays(GL_LINE_LOOP, 0, circleVector->size());
 
@@ -285,8 +300,10 @@ int main() {
         glLineWidth(1.0f);
 
         //Actually draw all the leaves
-        emitter.update(deltaTime, emitterParams);
-        emitter.draw(view, projection);
+        if(simulationRunning) {
+            emitter.update(deltaTime, emitterParams);
+            emitter.draw(view, projection);
+        }
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);

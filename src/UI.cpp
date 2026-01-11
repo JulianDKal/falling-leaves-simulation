@@ -1,5 +1,6 @@
 #include "UI.h"
 
+
 UI::UI(SDL_Window* window, SDL_GLContext context)
 {
     // Setup ImGui context
@@ -21,7 +22,6 @@ void UI::update(EmitterParams& emitterParams)
     ImGui_ImplSDL3_NewFrame();
     ImGui_ImplOpenGL3_NewFrame();
     ImGui::NewFrame();
-
     ImGui::SetNextWindowSize(ImVec2{wWidth / 5, wHeight});
     ImGui::SetNextWindowPos(ImVec2{0, 0});
     
@@ -93,10 +93,11 @@ void UI::update(EmitterParams& emitterParams)
     ImGui::Text("Leaf Count:");
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.6f);
 
-    // Input box with validation
     if (ImGui::InputInt("##leafCount", &emitterParams.leafCount, 100, 1000, ImGuiInputTextFlags_EnterReturnsTrue)) {
-    // Validate when Enter is pressed
-    emitterParams.leafCount = glm::clamp(emitterParams.leafCount, 1, 1000000);
+        // Validate when Enter is pressed
+        emitterParams.leafCount = glm::clamp(emitterParams.leafCount, 1, 1000000);
+        SDL_Event event {.type = PARTICLE_COUNT_UPDATED_EVENT};
+        SDL_PushEvent(&event);
     }
 
     // Display actual count
@@ -162,11 +163,15 @@ void UI::update(EmitterParams& emitterParams)
     ImGui::Spacing();
     float width = (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x) / 2.0f;
     if(ImGui::Button("Start", ImVec2{width, 0})){
-        //Start the simulation
+        SDL_Event event {.type = START_SIMULATION_EVENT}; 
+        // Push the event to SDLs event queue
+        SDL_PushEvent(&event);
     }
     ImGui::SameLine();
     if(ImGui::Button("Stop", ImVec2{width, 0})){
-        //Stop the simulation
+        SDL_Event event {.type = STOP_SIMULATION_EVENT}; 
+        // Push the event to SDLs event queue
+        SDL_PushEvent(&event);
     }
 
     ImGui::Checkbox("Demo Window", &show_demo_window);

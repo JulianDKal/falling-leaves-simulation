@@ -6,6 +6,7 @@
 #include "Helpers.h"
 #include "Profiler.h"
 #include <iostream>
+#include <utility>
 
 static float leafVertices[] = {
     //   position                        UV
@@ -38,6 +39,7 @@ public:
     void update(float dT, EmitterParams& params);
     void draw(const glm::mat4& view, const glm::mat4& projection);
     void setTimeUniform(float time);
+    void resizeParticleCount(EmitterParams& params);
     Emitter(int count);
     ~Emitter();
 };
