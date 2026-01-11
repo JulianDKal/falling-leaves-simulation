@@ -9,9 +9,6 @@ void Emitter::update(float dT, const EmitterParams& params)
 {
     totalTime += dT;  // accumulate
 
-    // Set the uniform once per frame
-    setTimeUniform(totalTime);
-
     // --- Fixed timestep physics ---
     physicsAccumulator += dT;
 
@@ -66,40 +63,19 @@ void Emitter::setTimeUniform(float time)
 
 void Emitter::resizeParticleCount(const EmitterParams &params)
 {
-    if(numInstances == params.leafCount) return; //Nothing to do
-    
+    if(numInstances == params.leafCount) return;
+
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> posDist(-params.emitRadius, params.emitRadius); // Position range
+    std::uniform_real_distribution<float> posDist(-params.emitRadius, params.emitRadius);
     std::uniform_real_distribution<float> rotDist(0.0f, 360.0f); 
     std::uniform_real_distribution<float> speedDist(0.5f, 4.0f);
     std::uniform_real_distribution<float> oneDist(0.0f, 1.0f);
 
     leaves.resize(params.leafCount);
-    glm::vec3 position;
     for (int i = numInstances; i < params.leafCount; i++)
     {
-        if(params.shape == EmitterShape::boxShape) {
-            position = glm::vec3{
-                posDist(gen) ,
-                params.emitHeight,
-                posDist(gen)
-            };
-        }
-        else if(params.shape == EmitterShape::circleShape) {
-            position = glm::vec3{1, 0, 0};
-            glm::quat rotation = glm::angleAxis(glm::radians(rotDist(gen)), glm::vec3{0, 1, 0});
-            position = rotation * position * oneDist(gen) * params.emitRadius + glm::vec3{0, params.emitHeight, 0};
-        }
-        glm::vec3 rotation {
-            rotDist(gen),  // x rotation: -180 to 180 degrees
-            rotDist(gen),  // y rotation: -180 to 180 degrees
-            rotDist(gen)   // z rotation: -180 to 180 degrees
-        };
-
-        Leaf l{position, speedDist(gen)};
-        l.setRotation(rotation);
-        leaves[i] = std::move(l);
+        leaves[i] = std::move(createLeaf(params, gen, posDist, rotDist, speedDist, oneDist));
     }
     
     transformations.resize(params.leafCount, glm::mat4(1.0));
@@ -119,32 +95,9 @@ void Emitter::changeEmitArea(const EmitterParams &params)
     std::uniform_real_distribution<float> rotDist(0.0f, 360.0f);
     std::uniform_real_distribution<float> oneDist(0.0f, 1.0f);
 
-    glm::vec3 position;
     for (int i = 0; i < numInstances; i++)
     {
-        if(params.shape == EmitterShape::boxShape) {
-            position = glm::vec3{
-                posDist(gen) ,
-                params.emitHeight,
-                posDist(gen)
-            };
-        }
-        else if(params.shape == EmitterShape::circleShape) {
-            position = glm::vec3{1, 0, 0};
-            glm::quat rotation = glm::angleAxis(glm::radians(rotDist(gen)), glm::vec3{0, 1, 0});
-            position = rotation * position * oneDist(gen) * params.emitRadius + glm::vec3{0, params.emitHeight, 0};
-        }
-        
-        glm::vec3 rotation {
-            rotDist(gen),  
-            rotDist(gen),
-            rotDist(gen)
-        };
-
-        Leaf l{position, speedDist(gen)};
-        l.setRotation(rotation);
-        // leaves.emplace_back(Leaf{position, speedDist(gen)});
-        leaves[i] = std::move(l);
+        leaves[i] = std::move(createLeaf(params, gen, posDist, rotDist, speedDist, oneDist));
     }
 
     std::cout << "Emit Area changed!" << std::endl;
@@ -208,6 +161,42 @@ Emitter::Emitter(const EmitterParams& params)
 void Emitter::updateTransformBuffer() {
     glBindBuffer(GL_ARRAY_BUFFER, transformationsVBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, transformations.size() * sizeof(glm::mat4), transformations.data());
+}
+
+glm::vec3 Emitter::generateRandomRotation(std::mt19937 &gen, std::uniform_real_distribution<float> &rotDist) {
+    return glm::vec3{
+        rotDist(gen),
+        rotDist(gen),
+        rotDist(gen)
+    };
+}
+
+Leaf Emitter::createLeaf(const EmitterParams &params, std::mt19937 &gen,
+                         std::uniform_real_distribution<float> &posDist,
+                         std::uniform_real_distribution<float> &rotDist,
+                         std::uniform_real_distribution<float> &speedDist,
+                         std::uniform_real_distribution<float> &oneDist)
+{
+    glm::vec3 position;
+
+    if(params.shape == EmitterShape::boxShape) {
+        position = glm::vec3{
+            posDist(gen),
+            params.emitHeight,
+            posDist(gen)
+        };
+    }
+    else if(params.shape == EmitterShape::circleShape) {
+        position = glm::vec3{1, 0, 0};
+        glm::quat rotation = glm::angleAxis(glm::radians(rotDist(gen)), glm::vec3{0, 1, 0});
+        position = rotation * position * oneDist(gen) * params.emitRadius + glm::vec3{0, params.emitHeight, 0};
+    }
+
+    glm::vec3 rotation = generateRandomRotation(gen, rotDist);
+    Leaf l{position, speedDist(gen)};
+    l.setRotation(rotation);
+
+    return l;
 }
 
 Emitter::~Emitter()

@@ -37,6 +37,16 @@ private:
     float physicsAccumulator = 0.0f; // for fixed timestep
     const float fixedDT = 0.016f; // for fixed timestep
     void updateTransformBuffer();
+
+    Leaf createLeaf(const EmitterParams &params, std::mt19937 &gen,
+                    std::uniform_real_distribution<float> &posDist,
+                    std::uniform_real_distribution<float> &rotDist,
+                    std::uniform_real_distribution<float> &speedDist,
+                    std::uniform_real_distribution<float> &oneDist);
+
+    glm::vec3 generateRandomRotation(std::mt19937 &gen,
+                                     std::uniform_real_distribution<float> &rotDist);
+                                     
 public:
     int instancesCount();
 
