@@ -67,19 +67,22 @@ void Emitter::resizeParticleCount(const EmitterParams &params)
 
     std::random_device rd;
     std::mt19937 gen(rd());
+
     std::uniform_real_distribution<float> posDist(-params.emitRadius, params.emitRadius);
-    std::uniform_real_distribution<float> rotDist(0.0f, 360.0f); 
+    std::uniform_real_distribution<float> rotDist(0.0f, 360.0f);
     std::uniform_real_distribution<float> speedDist(0.5f, 4.0f);
     std::uniform_real_distribution<float> oneDist(0.0f, 1.0f);
+    std::uniform_real_distribution<float> spawnHeightDist(1.0f, params.emitHeight);
 
     leaves.resize(params.leafCount);
     for (int i = numInstances; i < params.leafCount; i++)
     {
-        leaves[i] = std::move(createLeaf(params, gen, posDist, rotDist, speedDist, oneDist));
+        leaves[i] = std::move(createLeaf(params, gen, posDist, rotDist, speedDist, oneDist, spawnHeightDist));
     }
-    
+
     transformations.resize(params.leafCount, glm::mat4(1.0));
     numInstances = params.leafCount;
+
     glBindBuffer(GL_ARRAY_BUFFER, transformationsVBO);
     glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(glm::mat4), transformations.data(), GL_DYNAMIC_DRAW);
 
@@ -90,14 +93,16 @@ void Emitter::changeEmitArea(const EmitterParams &params)
 {
     std::random_device rd;
     std::mt19937 gen(rd());
+
     std::uniform_real_distribution<float> posDist(-params.emitRadius, params.emitRadius);
-    std::uniform_real_distribution<float> speedDist(0.5f, 4.0f);
     std::uniform_real_distribution<float> rotDist(0.0f, 360.0f);
+    std::uniform_real_distribution<float> speedDist(0.5f, 4.0f);
     std::uniform_real_distribution<float> oneDist(0.0f, 1.0f);
+    std::uniform_real_distribution<float> spawnHeightDist(1.0f, params.emitHeight);
 
     for (int i = 0; i < numInstances; i++)
     {
-        leaves[i] = std::move(createLeaf(params, gen, posDist, rotDist, speedDist, oneDist));
+        leaves[i] = std::move(createLeaf(params, gen, posDist, rotDist, speedDist, oneDist, spawnHeightDist));
     }
 
     std::cout << "Emit Area changed!" << std::endl;
@@ -175,21 +180,25 @@ Leaf Emitter::createLeaf(const EmitterParams &params, std::mt19937 &gen,
                          std::uniform_real_distribution<float> &posDist,
                          std::uniform_real_distribution<float> &rotDist,
                          std::uniform_real_distribution<float> &speedDist,
-                         std::uniform_real_distribution<float> &oneDist)
+                         std::uniform_real_distribution<float> &oneDist,
+                         std::uniform_real_distribution<float> &spawnHeightDist)
 {
     glm::vec3 position;
 
+    // Random spawn height from pre-made distribution
+    float spawnHeight = spawnHeightDist(gen);
+
     if(params.shape == EmitterShape::boxShape) {
         position = glm::vec3{
-            posDist(gen),
-            params.emitHeight,
-            posDist(gen)
+            posDist(gen),    // X
+            spawnHeight,     // Y
+            posDist(gen)     // Z
         };
     }
     else if(params.shape == EmitterShape::circleShape) {
         position = glm::vec3{1, 0, 0};
         glm::quat rotation = glm::angleAxis(glm::radians(rotDist(gen)), glm::vec3{0, 1, 0});
-        position = rotation * position * oneDist(gen) * params.emitRadius + glm::vec3{0, params.emitHeight, 0};
+        position = rotation * position * oneDist(gen) * params.emitRadius + glm::vec3{0, spawnHeight, 0};
     }
 
     glm::vec3 rotation = generateRandomRotation(gen, rotDist);
