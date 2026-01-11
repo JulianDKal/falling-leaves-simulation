@@ -28,7 +28,7 @@ public:
     Leaf(const glm::vec3& pos, const glm::vec3& initialVelocity, const glm::vec3& initialRotation);
     void setRotation(const glm::vec3& newRotation);
     void addRotation(const glm::vec3& newRotation);
-    const glm::mat4& getLeafModel() const;
+    glm::mat4& getLeafModel();
     void physicsUpdate(float fixedDT);
     void update(const EmitterParams& params);
     ~Leaf();    

@@ -27,7 +27,9 @@ private:
     std::vector<Leaf> leaves;
     std::vector<glm::mat4> transformations; //Holds all the transformation data for the leaves
     unsigned int leafVAO, leafVBO, leafEBO;
-    unsigned int transformationsVBO;
+    //unsigned int transformationsVBO;
+    unsigned int transformationsSSBO;
+    Shader computeShader;
     int numInstances;
     Shader leafShader;
     Texture leafTexture;
@@ -36,14 +38,11 @@ private:
     float totalTime;
     float physicsAccumulator = 0.0f; // for fixed timestep
     const float fixedDT = 0.016f; // for fixed timestep
-    void updateTransformBuffer();
+    void uploadInitialTransforms();
 public:
-    int instancesCount();
-
     void fixedUpdatePhysics(float fixedDT);
     void update(float dT, const EmitterParams& params);
     void draw(const glm::mat4& view, const glm::mat4& projection);
-    void setTimeUniform(float time);
     void resizeParticleCount(const EmitterParams& params);
     void changeEmitArea(const EmitterParams& params);
     Emitter(const EmitterParams& params);
