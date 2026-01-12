@@ -5,16 +5,22 @@ void Emitter::update(float dT, const EmitterParams& params)
 {
     // --- Fixed timestep physics ---
     physicsAccumulator += dT;
+    
+    glUseProgram(computeShader.ID);
+    computeShader.setFloat("emitHeight", params.emitHeight);
+    computeShader.setFloat("scale", params.size);
+    computeShader.setFloat("gravity", params.gravity);
+    computeShader.setVec3f("windForce", params.windForce);
 
     while (physicsAccumulator >= fixedDT)
     {
         fixedUpdatePhysics(fixedDT);
         physicsAccumulator -= fixedDT;
     }
-    glUseProgram(computeShader.ID);
-    computeShader.setFloat("emitHeight", params.emitHeight);
-    computeShader.setFloat("scale", params.size);
-    // Bind SSBO to binding point 0
+}
+
+void Emitter::fixedUpdatePhysics(float fixedDT)
+{
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, transformationsSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, positionsSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, rotationsSSBO);
@@ -22,14 +28,7 @@ void Emitter::update(float dT, const EmitterParams& params)
     glDispatchCompute(numInstances, 1, 1);
     // Wait for compute to finish
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-}
 
-void Emitter::fixedUpdatePhysics(float fixedDT)
-{
-    for (auto& leaf : leaves)
-    {
-        //leaf.physicsUpdate(fixedDT); // physics-only update
-    }
 }
 
 void Emitter::draw(const glm::mat4 &view, const glm::mat4 &projection)
