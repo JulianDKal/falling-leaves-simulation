@@ -25,10 +25,8 @@ class Emitter
 {
 private:
     std::vector<Leaf> leaves;
-    std::vector<glm::mat4> transformations; //Holds all the transformation data for the leaves
     unsigned int leafVAO, leafVBO, leafEBO;
-    //unsigned int transformationsVBO;
-    unsigned int transformationsSSBO, positionsSSBO; //The first SSBO stores the contiuously updated matrices, the second the initial positions
+    unsigned int transformationsSSBO, positionsSSBO, rotationsSSBO; //The first SSBO stores the contiuously updated matrices, the second the initial positions
     Shader computeShader;
     int numInstances;
     Shader leafShader;

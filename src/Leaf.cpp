@@ -32,9 +32,14 @@ glm::mat4 &Leaf::getLeafModel()
     return model;
 }
 
-glm::vec3 &Leaf::getPosition()
+const glm::vec3& Leaf::getPosition() const
 {
     return position;
+}
+
+const glm::vec3& Leaf::getRotation() const
+{
+    return rotation;
 }
 
 void Leaf::update(const EmitterParams& params)

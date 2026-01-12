@@ -19,7 +19,6 @@ private:
     float drag = 0.9f;
     float size = 0.6f;
     float fallingSpeed = 0.02f;
-    // unsigned int vao, vbo, ebo;
     
 public:
     Leaf() = default;
@@ -29,7 +28,8 @@ public:
     void setRotation(const glm::vec3& newRotation);
     void addRotation(const glm::vec3& newRotation);
     glm::mat4& getLeafModel();
-    glm::vec3& getPosition();
+    const glm::vec3 &getPosition() const;
+    const glm::vec3& getRotation() const;
     void physicsUpdate(float fixedDT);
     void update(const EmitterParams& params);
     ~Leaf();    
