@@ -3,8 +3,6 @@
 
 void Emitter::update(float dT, const EmitterParams& params)
 {
-    totalTime += dT;  // accumulate
-
     // --- Fixed timestep physics ---
     physicsAccumulator += dT;
 
@@ -13,23 +11,13 @@ void Emitter::update(float dT, const EmitterParams& params)
         fixedUpdatePhysics(fixedDT);
         physicsAccumulator -= fixedDT;
     }
-    // Profiler::Start();
-    // for (int i = 0; i < numInstances; i++)
-    // {
-    //     leaves[i].addRotation(glm::vec3 {0, rotationSpeed, rotationSpeed});
-    //     leaves[i].update(params);
-    //     transformations[i] = leaves[i].getLeafModel();
-    // }
-    // updateTransformBuffer();
-    // Profiler::Stop(100);
     glUseProgram(computeShader.ID);
-    
+    computeShader.setFloat("emitHeight", params.emitHeight);
     // Bind SSBO to binding point 0
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, transformationsSSBO);
-    
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, positionsSSBO);
     // Dispatch compute shader
     glDispatchCompute(numInstances, 1, 1);
-    
     // Wait for compute to finish
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
@@ -91,9 +79,9 @@ void Emitter::resizeParticleCount(const EmitterParams &params)
             position = rotation * position * oneDist(gen) * params.emitRadius + glm::vec3{0, heightDist(gen), 0};
         }
         glm::vec3 rotation {
-            rotDist(gen),  // x rotation: -180 to 180 degrees
-            rotDist(gen),  // y rotation: -180 to 180 degrees
-            rotDist(gen)   // z rotation: -180 to 180 degrees
+            rotDist(gen),  
+            rotDist(gen),  
+            rotDist(gen)
         };
 
         Leaf l{position, speedDist(gen)};
@@ -154,20 +142,24 @@ void Emitter::changeEmitArea(const EmitterParams &params)
 
 void Emitter::uploadInitialTransforms() {
         std::vector<glm::mat4> initialTransforms(numInstances);
+        std::vector<glm::vec4> initialPositions(numInstances);
         for (int i = 0; i < numInstances; i++) {
             initialTransforms[i] = leaves[i].getLeafModel();
+            initialPositions[i] = glm::vec4(leaves[i].getPosition(), 1.0f);
+            // std::cout << "Position " << i << ": (" << initialPositions[i].x << ", " << initialPositions[i].y << ", " << initialPositions[i].z << ")" << std::endl;
         }
         
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, transformationsSSBO);
         glBufferData(GL_SHADER_STORAGE_BUFFER, numInstances * sizeof(glm::mat4), initialTransforms.data(), GL_DYNAMIC_DRAW);
         
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, positionsSSBO);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, numInstances * sizeof(glm::vec4), initialPositions.data(), GL_DYNAMIC_DRAW);
+
     }
 
 Emitter::Emitter(const EmitterParams& params)
 {
     numInstances = params.leafCount;
-    std::cout << numInstances << std::endl;
 
     leafShader.createProgram("./../shaders/leaf_vertex.glsl","./../shaders/leaf_fragment.glsl");
     computeShader.createComputeProgram("./../shaders/compute.glsl");
@@ -184,6 +176,12 @@ Emitter::Emitter(const EmitterParams& params)
 
     glBufferData(GL_SHADER_STORAGE_BUFFER, numInstances * sizeof(glm::mat4), nullptr, GL_DYNAMIC_DRAW); 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, transformationsSSBO);
+
+    glGenBuffers(1, &positionsSSBO);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, positionsSSBO);
+
+    glBufferData(GL_SHADER_STORAGE_BUFFER, numInstances * sizeof(glm::vec4), nullptr, GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, positionsSSBO);
 
     //Generate buffers for the leaf object that will be used for instancing
     glGenVertexArrays(1, &leafVAO);

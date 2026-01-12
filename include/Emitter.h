@@ -28,14 +28,13 @@ private:
     std::vector<glm::mat4> transformations; //Holds all the transformation data for the leaves
     unsigned int leafVAO, leafVBO, leafEBO;
     //unsigned int transformationsVBO;
-    unsigned int transformationsSSBO;
+    unsigned int transformationsSSBO, positionsSSBO; //The first SSBO stores the contiuously updated matrices, the second the initial positions
     Shader computeShader;
     int numInstances;
     Shader leafShader;
     Texture leafTexture;
 
     float rotationSpeed = 0.3f;
-    float totalTime;
     float physicsAccumulator = 0.0f; // for fixed timestep
     const float fixedDT = 0.016f; // for fixed timestep
     void uploadInitialTransforms();

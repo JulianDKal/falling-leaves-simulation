@@ -29,6 +29,7 @@ public:
     void setRotation(const glm::vec3& newRotation);
     void addRotation(const glm::vec3& newRotation);
     glm::mat4& getLeafModel();
+    glm::vec3& getPosition();
     void physicsUpdate(float fixedDT);
     void update(const EmitterParams& params);
     ~Leaf();    

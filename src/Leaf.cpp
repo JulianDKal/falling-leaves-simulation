@@ -32,6 +32,11 @@ glm::mat4 &Leaf::getLeafModel()
     return model;
 }
 
+glm::vec3 &Leaf::getPosition()
+{
+    return position;
+}
+
 void Leaf::update(const EmitterParams& params)
 {
     getErrorCode();
