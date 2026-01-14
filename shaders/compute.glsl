@@ -48,6 +48,7 @@ void main() {
         position = vec3(initialPositions[leafID].x, emitHeight, initialPositions[leafID].z);
     }
 
+    //rotate
     mat3 rotationMat = eulerToMat3(vec3(rotations[leafID].x, 0, rotations[leafID].z));
 
     newModel[0] = vec4(rotationMat[0] * scale, 0.0);
@@ -68,7 +69,6 @@ mat3 eulerToMat3(vec3 euler) {
     float cz = cos(euler.z);  // cos(roll)
     float sz = sin(euler.z);  // sin(roll)
     
-    // Rotation matrix (XYZ order - common in games)
     mat3 rotX = mat3(1.0, 0.0, 0.0,
                      0.0, cx, -sx,
                      0.0, sx, cx);
@@ -81,6 +81,5 @@ mat3 eulerToMat3(vec3 euler) {
                      sz, cz, 0.0,
                      0.0, 0.0, 1.0);
     
-    // Combine: Z * Y * X (typical order)
     return rotZ * rotX;
 }
