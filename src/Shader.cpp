@@ -34,7 +34,6 @@ void Shader::createProgram(std::filesystem::path vShaderPath, std::filesystem::p
         return;
     }
     
-
     vShaderStream << vShaderFile.rdbuf();
     fShaderStream << fShaderFile.rdbuf();
 
@@ -82,6 +81,44 @@ void Shader::createProgram(std::filesystem::path vShaderPath, std::filesystem::p
     glDeleteShader(vS);
     glDeleteShader(fS);
     vS = fS = 0;
+
+}
+
+void Shader::createComputeProgram(std::filesystem::path computeShaderPath)
+{
+    std::fstream computeShaderFile;
+    std::stringstream computeShaderStream;
+        if (!std::filesystem::exists(computeShaderPath)) {
+        std::cerr << "compute shader file not found: " << computeShaderPath << std::endl;
+        return; // or throw an exception
+    }
+
+    computeShaderFile.open(computeShaderPath);
+    if(!computeShaderFile.is_open()){
+        std::cerr << "Failed to open compute shader file: " << computeShaderPath << std::endl;
+        return;
+    }
+    
+    computeShaderStream << computeShaderFile.rdbuf();
+    std::string computeShader = computeShaderStream.str();
+    const char* computeShaderText = computeShader.c_str();
+
+    unsigned int compute = glCreateShader(GL_COMPUTE_SHADER);
+    glShaderSource(compute, 1, &computeShaderText, NULL);
+    glCompileShader(compute);
+
+    int success;
+    char infoLog[512];
+    glGetShaderiv(compute, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(compute, 512, NULL, infoLog);
+        std::cerr << "ERROR::COMPUTE_SHADER_COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
+    ID = glCreateProgram();
+    glAttachShader(ID, compute);
+    glLinkProgram(ID);
+
 
 }
 

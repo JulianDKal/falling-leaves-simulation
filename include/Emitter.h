@@ -25,19 +25,17 @@ class Emitter
 {
 private:
     std::vector<Leaf> leaves;
-    std::vector<glm::mat4> transformations; //Holds all the transformation data for the leaves
     unsigned int leafVAO, leafVBO, leafEBO;
-    unsigned int transformationsVBO;
+    unsigned int transformationsSSBO, positionsSSBO, rotationsSSBO; //The first SSBO stores the contiuously updated matrices, the second the initial positions
+    Shader computeShader;
     int numInstances;
     Shader leafShader;
     Texture leafTexture;
 
     float rotationSpeed = 0.3f;
-    float totalTime;
     float physicsAccumulator = 0.0f; // for fixed timestep
     const float fixedDT = 0.016f; // for fixed timestep
     void updateTransformBuffer();
-
      Leaf createLeaf(const EmitterParams &params, std::mt19937 &gen,
                      std::uniform_real_distribution<float> &posDist,
                      std::uniform_real_distribution<float> &rotDist,
@@ -47,14 +45,11 @@ private:
 
     glm::vec3 generateRandomRotation(std::mt19937 &gen,
                                      std::uniform_real_distribution<float> &rotDist);
-                                     
+    void uploadInitialTransforms();
 public:
-    int instancesCount();
-
     void fixedUpdatePhysics(float fixedDT);
     void update(float dT, const EmitterParams& params);
     void draw(const glm::mat4& view, const glm::mat4& projection);
-    void setTimeUniform(float time);
     void resizeParticleCount(const EmitterParams& params);
     void changeEmitArea(const EmitterParams& params);
     Emitter(const EmitterParams& params);

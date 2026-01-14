@@ -108,10 +108,11 @@ void UI::update(EmitterParams& emitterParams)
     // 5. Emit Radius
     ImGui::Text("Emit Radius:");
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.9f);
-    if(ImGui::SliderFloat("##emitRadius", &emitterParams.emitRadius, 0.1f, 100.0f, "%.1f m")){
+    ImGui::SliderFloat("##emitRadius", &emitterParams.emitRadius, 0.1f, 100.0f, "%.1f m");
+
+    if(ImGui::IsItemDeactivatedAfterEdit()) {
         SDL_Event event {.type = EMIT_AREA_CHANGED_EVENT}; 
         SDL_PushEvent(&event);
-
     }
     ImGui::PopItemWidth();
 
