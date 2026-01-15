@@ -26,7 +26,7 @@ class Emitter
 private:
     std::vector<Leaf> leaves;
     unsigned int leafVAO, leafVBO, leafEBO;
-    unsigned int transformationsSSBO, positionsSSBO, rotationsSSBO; //The first SSBO stores the contiuously updated matrices, the second the initial positions
+    unsigned int transformationsSSBO, positionsSSBO, rotationsSSBO, velocitiesSSBO; //The first SSBO stores the contiuously updated matrices, the second the initial positions
     Shader computeShader;
     int numInstances;
     Shader leafShader;

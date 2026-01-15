@@ -25,6 +25,7 @@ void Emitter::fixedUpdatePhysics(float fixedDT)
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, transformationsSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, positionsSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, rotationsSSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, velocitiesSSBO); 
     // Dispatch compute shader
     glDispatchCompute(numInstances, 1, 1);
     // Wait for compute to finish
@@ -102,11 +103,13 @@ void Emitter::uploadInitialTransforms() {
         //Might be able to remove this later if the leaves can respawn randomly in the compute shader
         std::vector<glm::vec4> initialPositions(numInstances); 
         std::vector<glm::vec4> rotations(numInstances);
+        std::vector<glm::vec4> velocities(numInstances);
         for (int i = 0; i < numInstances; i++) {
             initialTransforms[i] = leaves[i].getLeafModel();
             //Need to make these vec4 because of memory alignment reasons in the compute shader - might be able to fix later?
             initialPositions[i] = glm::vec4(leaves[i].getPosition(), 1.0f);
             rotations[i] = glm::vec4(leaves[i].getRotation(), 1.0f);
+            velocities[i] = glm::vec4(0.0f); 
         }
         
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, transformationsSSBO);
@@ -117,6 +120,9 @@ void Emitter::uploadInitialTransforms() {
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, rotationsSSBO);
         glBufferData(GL_SHADER_STORAGE_BUFFER, numInstances * sizeof(glm::vec4), rotations.data(), GL_DYNAMIC_DRAW);
+
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, velocitiesSSBO);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, numInstances * sizeof(glm::vec4), velocities.data(), GL_DYNAMIC_DRAW);
 
     }
 
@@ -149,6 +155,12 @@ Emitter::Emitter(const EmitterParams& params)
 
     glBufferData(GL_SHADER_STORAGE_BUFFER, numInstances * sizeof(glm::vec4), nullptr, GL_DYNAMIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, rotationsSSBO);
+
+    glGenBuffers(1, &velocitiesSSBO);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, velocitiesSSBO);
+    
+    glBufferData(GL_SHADER_STORAGE_BUFFER, numInstances * sizeof(glm::vec4), nullptr, GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, velocitiesSSBO);
 
 
     //Generate buffers for the leaf object that will be used for instancing
