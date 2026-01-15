@@ -152,7 +152,7 @@ void UI::update(EmitterParams& emitterParams)
     ImGui::Separator();
     ImGui::Spacing();
 
-    // 8. Reset button
+    //TODO: This currently breaks the simulation. Probably because the right events are not being sent yet
     if (ImGui::Button("Reset to Defaults", ImVec2(-1, 0))) {
         emitterParams = EmitterParams{
             glm::vec3(0.0f, 0.0f, 0.0f),  // windForce

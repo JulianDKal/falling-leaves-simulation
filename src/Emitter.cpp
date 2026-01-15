@@ -55,6 +55,7 @@ void Emitter::draw(const glm::mat4 &view, const glm::mat4 &projection)
 void Emitter::resizeParticleCount(const EmitterParams &params)
 {
     if(numInstances == params.leafCount) return;
+    numInstances = params.leafCount;
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -65,14 +66,15 @@ void Emitter::resizeParticleCount(const EmitterParams &params)
     std::uniform_real_distribution<float> oneDist(0.0f, 1.0f);
     std::uniform_real_distribution<float> spawnHeightDist(1.0f, params.emitHeight);
 
-    leaves.resize(params.leafCount);
-    for (int i = numInstances; i < params.leafCount; i++)
+    //TODO: Maybe change this so it only adds or removes the leaves necessary
+    leaves.resize(numInstances);
+    for (int i = 0; i < numInstances; i++)
     {
         leaves[i] = std::move(createLeaf(params, gen, posDist, rotDist, speedDist, oneDist, spawnHeightDist));
     }
         
     uploadInitialTransforms();
-    std::cout << "Emitter buffers resized!" << std::endl;
+    std::cout << "Emitter buffers resized to size " << numInstances << std::endl;
 }
 
 void Emitter::changeEmitArea(const EmitterParams &params)
@@ -208,7 +210,7 @@ Leaf Emitter::createLeaf(const EmitterParams &params, std::mt19937 &gen,
         float r = sqrt(oneDist(gen)) * params.emitRadius;
         position = rotation * position * r + glm::vec3{0, spawnHeight, 0};
     }
-
+    //TODO: Move the leaf rotation into the constructor as well
     glm::vec3 rotation = generateRandomRotation(gen, rotDist);
     Leaf l{position, speedDist(gen)};
     l.setRotation(rotation);

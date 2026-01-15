@@ -49,6 +49,7 @@ void main() {
     }
 
     //rotate
+    //TODO: Implement this with quaternions
     mat3 rotationMat = eulerToMat3(vec3(rotations[leafID].x, 0, rotations[leafID].z));
 
     newModel[0] = vec4(rotationMat[0] * scale, 0.0);
