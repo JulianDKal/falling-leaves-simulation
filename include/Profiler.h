@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 
-#define PROFILING_ACTIVE 0
+#define PROFILING_ACTIVE 1
 
 class Profiler
 {
