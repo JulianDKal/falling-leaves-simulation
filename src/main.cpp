@@ -291,7 +291,6 @@ int main() {
         lineShader.setMatrix4("model", model);
         lineShader.setVec3f("color", xColor);
 
-
         if(emitterParams.shape == EmitterShape::circleShape) {
             glBindVertexArray(circleVAO);
             glDrawArrays(GL_LINE_LOOP, 0, circleVector->size());
@@ -301,7 +300,6 @@ int main() {
             glBindVertexArray(quadVAO);
             glDrawArrays(GL_LINE_LOOP, 0, sizeof(quadVertices) / 3 / 4);
         }
-
 
         glLineWidth(1.0f);
 
