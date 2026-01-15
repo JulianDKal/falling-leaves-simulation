@@ -21,10 +21,10 @@ float wHeight = 1080.0f;
 
 float gridVertices[] = {
     // Positions          // UVs (texture coordinates)
--250.0f, 0.0f,  250.0f,  0.0f, 75.0f,  // Top-left
+    -250.0f, 0.0f,  250.0f,  0.0f, 75.0f,  // Top-left
     250.0f, 0.0f,  250.0f,  75.0f, 75.0f,  // Top-right
     250.0f, 0.0f, -250.0f,  75.0f, 0.0f,  // Bottom-right
--250.0f, 0.0f, -250.0f,  0.0f, 0.0f   // Bottom-left
+    -250.0f, 0.0f, -250.0f,  0.0f, 0.0f   // Bottom-left
 };
 
 float xAxisVertices[] = {
@@ -234,7 +234,7 @@ int main() {
         cam.update();
 
         glm::mat4 view = cam.getViewMatrix();
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1280.0f/720.0f, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1280.0f/720.0f, 0.1f, 250.0f);
 
         ui.update(emitterParams);
 
@@ -257,6 +257,10 @@ int main() {
 
         glm::mat4 model = glm::mat4(1.0f);
 
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
         glBindVertexArray(grid_VAO);
         glUseProgram(gridShader.ID);
         gridShader.useTexture(gridTexture, "gridTexture");
@@ -269,7 +273,7 @@ int main() {
         glm::vec3 xColor = {1.0f, 0.0f, 0.0f};
         glm::vec3 zColor = {0.0f, 0.0f, 1.0f};
 
-        glLineWidth(4.0f);
+        glLineWidth(3.0f);
 
         //Draw x and z Axis
         glBindVertexArray(xAxis_VAO);
@@ -302,6 +306,7 @@ int main() {
         }
 
         glLineWidth(1.0f);
+        glDisable(GL_BLEND);
 
         //Actually draw all the leaves
         if(simulationRunning) {

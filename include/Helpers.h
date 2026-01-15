@@ -4,11 +4,12 @@
 #include "glm/glm.hpp"
 #include <vector>
 
+static inline float pi = static_cast<float>(std::numbers::pi);
+
 enum class EmitterShape {
     boxShape,
     circleShape
 };
-
 
 //This is the struct that gets passed to the UI and the Emitter. When the user interacts with the UI,
 //the instance of this struct that gets passed around changes. The emitter then applies these changes to the simulation
@@ -39,6 +40,33 @@ inline std::vector<glm::vec3>* generateCirclePoints(int numOfPoints) {
         resultVec->at(i) = newPoint;
     }
     return resultVec;
+}
+
+// sectorCount is the number of horizontal sectors, stackCounts the number of vertical sectors 
+inline std::vector<glm::vec3>* generateSpherePoints(int sectorCount, int stackCount){
+    std::vector<glm::vec3>* result = new std::vector<glm::vec3>();
+    float sectorStep = 2 * pi / sectorCount;
+    float stackStep = pi / stackCount;
+    float sectorAngle, stackAngle;
+    glm::vec3 coordinate;
+
+    for (int i = 0; i < stackCount; i++)
+    {
+        stackAngle = pi / 2 - i * stackStep; // starting from pi/2 to -pi/2
+        coordinate.x = cosf(stackAngle); 
+        coordinate.y = sinf(stackAngle);
+        coordinate.z = cosf(stackAngle);
+
+        for (int j = 0; j < sectorCount; j++)
+        {
+            coordinate.x *= cosf(sectorAngle);
+            coordinate.z *= sinf(sectorAngle);
+            result->push_back(coordinate);
+        }
+        
+    }
+    return result;
+    
 }
 
 inline GLenum getErrorCode_(const char* file, int line) {

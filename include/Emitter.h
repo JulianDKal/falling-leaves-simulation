@@ -19,13 +19,16 @@ static float leafVertices[] = {
 static unsigned int leafIndices[] = {
     0, 1, 2,
     2, 3, 0
-};
+}; 
 
 class Emitter
 {
 private:
     std::vector<Leaf> leaves;
     unsigned int leafVAO, leafVBO, leafEBO;
+    std::vector<glm::vec3>* sphereCoordinates;
+    unsigned int sphereVAO, sphereVBO;
+
     unsigned int transformationsSSBO, positionsSSBO, rotationsSSBO; //The first SSBO stores the contiuously updated matrices, the second the initial positions
     Shader computeShader;
     int numInstances;
@@ -35,7 +38,6 @@ private:
     float rotationSpeed = 0.3f;
     float physicsAccumulator = 0.0f; // for fixed timestep
     const float fixedDT = 0.016f; // for fixed timestep
-    void updateTransformBuffer();
      Leaf createLeaf(const EmitterParams &params, std::mt19937 &gen,
                      std::uniform_real_distribution<float> &posDist,
                      std::uniform_real_distribution<float> &rotDist,

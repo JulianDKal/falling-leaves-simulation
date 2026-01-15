@@ -142,6 +142,8 @@ Emitter::Emitter(const EmitterParams& params)
     leaves.reserve(numInstances);
     leaves.resize(numInstances);
 
+    sphereCoordinates = generateSpherePoints(12, 12);
+
     //Set up the Shader Storage Buffer Object for the leaf model matrices
     glGenBuffers(1, &transformationsSSBO);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, transformationsSSBO);
@@ -180,6 +182,17 @@ Emitter::Emitter(const EmitterParams& params)
     // UV  (location = 1)
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+
+    glGenVertexArrays(1, &sphereVAO);
+    glGenBuffers(1, &sphereVBO);
+    glBindVertexArray(sphereVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, sphereVBO);
+    glBufferData(GL_ARRAY_BUFFER, sphereCoordinates->size() * 3 * sizeof(float), sphereCoordinates->data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
     //This creates all the leaves and assigns random positions to them as well as fill the ssbo with matrices
     changeEmitArea(params);
