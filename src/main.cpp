@@ -97,7 +97,8 @@ int main() {
         1000,                         // leafCount
         10.0f,                         // emitRadius
         15.0f,                         // emitHeight
-        EmitterShape::circleShape      // shape
+        EmitterShape::circleShape,      // shape
+        ParticleShape::sphereShape
     };
 
     std::vector<glm::vec3>* circleVector = generateCirclePoints(24);
@@ -311,7 +312,7 @@ int main() {
         //Actually draw all the leaves
         if(simulationRunning) {
             emitter.update(deltaTime, emitterParams);
-            emitter.draw(view, projection);
+            emitter.draw(view, projection, emitterParams);
         }
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

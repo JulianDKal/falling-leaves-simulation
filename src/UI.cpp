@@ -147,10 +147,27 @@ void UI::update(EmitterParams& emitterParams)
     }
     ImGui::PopStyleVar();
     ImGui::Unindent(10.0f);
+    ImGui::Spacing();
+
+    ImGui::Text("Particle Shape:");
+    ImGui::Spacing();
+    ImGui::Indent(10.0f);
+    if (ImGui::RadioButton("Leaf", emitterParams.particleShape == ParticleShape::leafShape)) {
+        emitterParams.particleShape = ParticleShape::leafShape;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Sphere", emitterParams.particleShape == ParticleShape::sphereShape)) {
+        emitterParams.particleShape = ParticleShape::sphereShape;   
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Point", emitterParams.particleShape == ParticleShape::pointShape)) {
+        emitterParams.particleShape = ParticleShape::pointShape;
+    }
 
     ImGui::Spacing();
     ImGui::Separator();
     ImGui::Spacing();
+
 
     //TODO: This currently breaks the simulation. Probably because the right events are not being sent yet
     if (ImGui::Button("Reset to Defaults", ImVec2(-1, 0))) {

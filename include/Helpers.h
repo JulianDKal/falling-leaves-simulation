@@ -11,6 +11,12 @@ enum class EmitterShape {
     circleShape
 };
 
+enum class ParticleShape {
+    leafShape, 
+    sphereShape, 
+    pointShape
+};
+
 //This is the struct that gets passed to the UI and the Emitter. When the user interacts with the UI,
 //the instance of this struct that gets passed around changes. The emitter then applies these changes to the simulation
 //This also gets passed to the leaf update method
@@ -24,6 +30,7 @@ struct EmitterParams {
     float emitRadius;
     float emitHeight;
     EmitterShape shape;
+    ParticleShape particleShape;
 };
 
 //Used to generate the vertex data for the circle shape gizmos
@@ -48,25 +55,65 @@ inline std::vector<glm::vec3>* generateSpherePoints(int sectorCount, int stackCo
     float sectorStep = 2 * pi / sectorCount;
     float stackStep = pi / stackCount;
     float sectorAngle, stackAngle;
-    glm::vec3 coordinate;
+    float xz, y;
 
-    for (int i = 0; i < stackCount; i++)
+    for (int i = 0; i <= stackCount; i++)
     {
         stackAngle = pi / 2 - i * stackStep; // starting from pi/2 to -pi/2
-        coordinate.x = cosf(stackAngle); 
-        coordinate.y = sinf(stackAngle);
-        coordinate.z = cosf(stackAngle);
+        xz = cosf(stackAngle); 
+        y = sinf(stackAngle);
 
         for (int j = 0; j < sectorCount; j++)
         {
-            coordinate.x *= cosf(sectorAngle);
-            coordinate.z *= sinf(sectorAngle);
-            result->push_back(coordinate);
+            sectorAngle = j * sectorStep;
+
+            glm::vec3 coordinate;
+            coordinate.x = xz * cosf(sectorAngle);
+            coordinate.y = y;
+            coordinate.z = xz * sinf(sectorAngle);
+            result->push_back(coordinate);  
         }
-        
     }
     return result;
-    
+}
+
+inline std::vector<unsigned int>* generateSphereIndices(int sectorCount, int stackCount){
+    std::vector<unsigned int>* indices = new std::vector<unsigned int>(); 
+    // k1--k1+1
+    // |  / |
+    // | /  |
+    // k2--k2+1
+
+    int k1, k2;
+    for(int i = 0; i < stackCount; ++i)
+    {
+        k1 = i * (sectorCount + 1);     // beginning of current stack
+        k2 = k1 + sectorCount + 1;      // beginning of next stack
+
+        for(int j = 0; j < sectorCount; ++j, ++k1, ++k2)
+        {
+            // 2 triangles per sector excluding first and last stacks
+            // k1 => k2 => k1+1
+            if(i != 0) //We don't have to do this if we are at the beginning
+            {
+                indices->push_back(k1);
+                indices->push_back(k2);
+                indices->push_back(k1 + 1);
+            }
+
+            // k1+1 => k2 => k2+1
+            if(i != (stackCount-1)) //We don't have to do this if we are at the last line
+            {
+                indices->push_back(k1 + 1);
+                indices->push_back(k2);
+                indices->push_back(k2 + 1);
+            }
+
+        }
+    }
+
+    return indices;
+        
 }
 
 inline GLenum getErrorCode_(const char* file, int line) {

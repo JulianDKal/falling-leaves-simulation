@@ -27,12 +27,13 @@ private:
     std::vector<Leaf> leaves;
     unsigned int leafVAO, leafVBO, leafEBO;
     std::vector<glm::vec3>* sphereCoordinates;
-    unsigned int sphereVAO, sphereVBO;
+    std::vector<unsigned int>* sphereIndices;
+    unsigned int sphereVAO, sphereVBO, sphereEBO;
 
     unsigned int transformationsSSBO, positionsSSBO, rotationsSSBO; //The first SSBO stores the contiuously updated matrices, the second the initial positions
     Shader computeShader;
     int numInstances;
-    Shader leafShader;
+    Shader leafShader, sphereShader;
     Texture leafTexture;
 
     float rotationSpeed = 0.3f;
@@ -50,7 +51,7 @@ private:
 public:
     void fixedUpdatePhysics(float fixedDT);
     void update(float dT, const EmitterParams& params);
-    void draw(const glm::mat4& view, const glm::mat4& projection);
+    void draw(const glm::mat4& view, const glm::mat4& projection, const EmitterParams& params);
     void resizeParticleCount(const EmitterParams& params);
     void changeEmitArea(const EmitterParams& params);
     Emitter(const EmitterParams& params);

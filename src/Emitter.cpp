@@ -32,20 +32,35 @@ void Emitter::fixedUpdatePhysics(float fixedDT)
 
 }
 
-void Emitter::draw(const glm::mat4 &view, const glm::mat4 &projection)
+void Emitter::draw(const glm::mat4 &view, const glm::mat4 &projection, const EmitterParams& params)
 {
     getErrorCode();
-    glUseProgram(leafShader.ID);
-    leafShader.useTexture(leafTexture, "leafTexture");
+    if(params.particleShape == ParticleShape::leafShape){
+        glUseProgram(leafShader.ID);
+        leafShader.useTexture(leafTexture, "leafTexture");
 
-    getErrorCode();
-    leafShader.setMatrix4("view", view);
-    leafShader.setMatrix4("projection", projection);
+        getErrorCode();
+        leafShader.setMatrix4("view", view);
+        leafShader.setMatrix4("projection", projection);
 
-    glBindVertexArray(leafVAO);
+        glBindVertexArray(leafVAO);
 
-    int indexCount = sizeof(leafIndices) / sizeof(leafIndices[0]);
-    glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0, numInstances);
+        int indexCount = sizeof(leafIndices) / sizeof(leafIndices[0]);
+        glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0, numInstances);
+    }
+    else if(params.particleShape == ParticleShape::sphereShape){
+        glUseProgram(sphereShader.ID);
+        getErrorCode();
+        sphereShader.setMatrix4("view", view);
+        sphereShader.setMatrix4("projection", projection);
+
+        glBindVertexArray(sphereVAO);
+
+        glDrawElementsInstanced(GL_TRIANGLES, sphereIndices->size(), GL_UNSIGNED_INT, 0, numInstances);
+        getErrorCode();
+
+    }
+    
 
     getErrorCode();
 
@@ -72,7 +87,7 @@ void Emitter::resizeParticleCount(const EmitterParams &params)
         std::uniform_real_distribution<float> posDist(-params.emitRadius, params.emitRadius);
         std::uniform_real_distribution<float> rotDist(0.0f, 360.0f);
         std::uniform_real_distribution<float> oneDist(0.0f, 1.0f);
-        std::uniform_real_distribution<float> spawnHeightDist(1.0f, params.emitHeight);
+        std::uniform_real_distribution<float> spawnHeightDist(0.0f, params.emitHeight);
 
         leaves.reserve(params.leafCount);
         Profiler::Start();
@@ -97,7 +112,7 @@ void Emitter::changeEmitArea(const EmitterParams &params)
     std::uniform_real_distribution<float> posDist(-params.emitRadius, params.emitRadius);
     std::uniform_real_distribution<float> rotDist(0.0f, 360.0f);
     std::uniform_real_distribution<float> oneDist(0.0f, 1.0f);
-    std::uniform_real_distribution<float> spawnHeightDist(1.0f, params.emitHeight);
+    std::uniform_real_distribution<float> spawnHeightDist(0.0f, params.emitHeight);
     
     for (int i = 0; i < numInstances; i++)
     {
@@ -136,13 +151,16 @@ Emitter::Emitter(const EmitterParams& params)
     numInstances = params.leafCount;
 
     leafShader.createProgram("./../shaders/leaf_vertex.glsl","./../shaders/leaf_fragment.glsl");
+    sphereShader.createProgram("./../shaders/sphere_vertex.glsl","./../shaders/sphere_fragment.glsl");
     computeShader.createComputeProgram("./../shaders/compute.glsl");
     leafTexture.initialize("./../textures/leaf-texture1.png", 0);
 
     leaves.reserve(numInstances);
     leaves.resize(numInstances);
+    int sectorCount = 20, stackCount = 12;
 
-    sphereCoordinates = generateSpherePoints(12, 12);
+    sphereCoordinates = generateSpherePoints(sectorCount, stackCount);
+    sphereIndices = generateSphereIndices(sectorCount, stackCount);
 
     //Set up the Shader Storage Buffer Object for the leaf model matrices
     glGenBuffers(1, &transformationsSSBO);
@@ -186,10 +204,20 @@ Emitter::Emitter(const EmitterParams& params)
 
     glGenVertexArrays(1, &sphereVAO);
     glGenBuffers(1, &sphereVBO);
+    glGenBuffers(1, &sphereEBO);
     glBindVertexArray(sphereVAO);
+
+    for (int i = 0; i < sphereCoordinates->size(); i++)
+    {
+        //std::cout << sphereCoordinates->at(i).x << " " << sphereCoordinates->at(i).y << " " << sphereCoordinates->at(i).z << std::endl;
+    }
+    
 
     glBindBuffer(GL_ARRAY_BUFFER, sphereVBO);
     glBufferData(GL_ARRAY_BUFFER, sphereCoordinates->size() * 3 * sizeof(float), sphereCoordinates->data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sphereIndices->size() * sizeof(unsigned int), sphereIndices->data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
