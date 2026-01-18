@@ -21,6 +21,10 @@ static unsigned int leafIndices[] = {
     2, 3, 0
 }; 
 
+static float pointVertices[] = {
+    0.0f, 0.0f, 0.0f
+};
+
 class Emitter
 {
 private:
@@ -29,11 +33,12 @@ private:
     std::vector<glm::vec3>* sphereCoordinates;
     std::vector<unsigned int>* sphereIndices;
     unsigned int sphereVAO, sphereVBO, sphereEBO;
+    unsigned int pointVAO, pointVBO;
 
     unsigned int transformationsSSBO, positionsSSBO, rotationsSSBO; //The first SSBO stores the contiuously updated matrices, the second the initial positions
     Shader computeShader;
     int numInstances;
-    Shader leafShader, sphereShader;
+    Shader leafShader, sphereShader, pointShader;
     Texture leafTexture;
 
     float rotationSpeed = 0.3f;

@@ -58,10 +58,23 @@ void Emitter::draw(const glm::mat4 &view, const glm::mat4 &projection, const Emi
 
         glDrawElementsInstanced(GL_TRIANGLES, sphereIndices->size(), GL_UNSIGNED_INT, 0, numInstances);
         getErrorCode();
+    }
+    else if(params.particleShape == ParticleShape::pointShape) {
+        glEnable(GL_PROGRAM_POINT_SIZE);
+        glUseProgram(pointShader.ID);
+        getErrorCode();
+        pointShader.setMatrix4("view", view);
+        pointShader.setMatrix4("projection", projection);
+        pointShader.setFloat("size", params.size);
+
+        glBindVertexArray(pointVAO);
+
+        glDrawArraysInstanced(GL_POINTS, 0, 1, numInstances);
+        getErrorCode();
+        glDisable(GL_PROGRAM_POINT_SIZE);
 
     }
     
-
     getErrorCode();
 
 }
@@ -152,6 +165,7 @@ Emitter::Emitter(const EmitterParams& params)
 
     leafShader.createProgram("./../shaders/leaf_vertex.glsl","./../shaders/leaf_fragment.glsl");
     sphereShader.createProgram("./../shaders/sphere_vertex.glsl","./../shaders/sphere_fragment.glsl");
+    pointShader.createProgram("./../shaders/point_vertex.glsl","./../shaders/point_fragment.glsl");
     computeShader.createComputeProgram("./../shaders/compute.glsl");
     leafTexture.initialize("./../textures/leaf-texture1.png", 0);
 
@@ -201,24 +215,31 @@ Emitter::Emitter(const EmitterParams& params)
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    //Buffers for the sphere shape
 
     glGenVertexArrays(1, &sphereVAO);
     glGenBuffers(1, &sphereVBO);
     glGenBuffers(1, &sphereEBO);
     glBindVertexArray(sphereVAO);
-
-    for (int i = 0; i < sphereCoordinates->size(); i++)
-    {
-        //std::cout << sphereCoordinates->at(i).x << " " << sphereCoordinates->at(i).y << " " << sphereCoordinates->at(i).z << std::endl;
-    }
     
-
     glBindBuffer(GL_ARRAY_BUFFER, sphereVBO);
     glBufferData(GL_ARRAY_BUFFER, sphereCoordinates->size() * 3 * sizeof(float), sphereCoordinates->data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereEBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sphereIndices->size() * sizeof(unsigned int), sphereIndices->data(), GL_STATIC_DRAW);
 
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    //Buffers for the point shape
+
+    glGenVertexArrays(1, &pointVAO);
+    glGenBuffers(1, &pointVBO);
+    
+    glBindVertexArray(pointVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, pointVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(pointVertices), pointVertices, GL_STATIC_DRAW);
+    
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
