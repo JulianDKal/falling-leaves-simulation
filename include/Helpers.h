@@ -50,7 +50,7 @@ inline std::vector<glm::vec3>* generateCirclePoints(int numOfPoints) {
 }
 
 // sectorCount is the number of horizontal sectors, stackCounts the number of vertical sectors 
-inline std::vector<glm::vec3>* generateSpherePoints(int sectorCount, int stackCount){
+inline std::vector<glm::vec3>* generateSpherePoints(int sectorCount, int stackCount, float radius){
     std::vector<glm::vec3>* result = new std::vector<glm::vec3>();
     float sectorStep = 2 * pi / sectorCount;
     float stackStep = pi / stackCount;
@@ -68,9 +68,9 @@ inline std::vector<glm::vec3>* generateSpherePoints(int sectorCount, int stackCo
             sectorAngle = j * sectorStep;
 
             glm::vec3 coordinate;
-            coordinate.x = xz * cosf(sectorAngle);
-            coordinate.y = y;
-            coordinate.z = xz * sinf(sectorAngle);
+            coordinate.x = xz * radius * cosf(sectorAngle);
+            coordinate.y = radius * y;
+            coordinate.z = xz * radius * sinf(sectorAngle);
             result->push_back(coordinate);  
         }
     }

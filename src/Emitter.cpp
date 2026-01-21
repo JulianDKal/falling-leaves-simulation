@@ -173,7 +173,7 @@ Emitter::Emitter(const EmitterParams& params)
     leaves.resize(numInstances);
     int sectorCount = 20, stackCount = 12;
 
-    sphereCoordinates = generateSpherePoints(sectorCount, stackCount);
+    sphereCoordinates = generateSpherePoints(sectorCount, stackCount, 0.25f);
     sphereIndices = generateSphereIndices(sectorCount, stackCount);
 
     //Set up the Shader Storage Buffer Object for the leaf model matrices

@@ -97,8 +97,8 @@ int main() {
         1000,                         // leafCount
         10.0f,                         // emitRadius
         15.0f,                         // emitHeight
-        EmitterShape::circleShape,      // shape
-        ParticleShape::sphereShape
+        EmitterShape::circleShape,      // shape of the emitter
+        ParticleShape::sphereShape     // particle shape
     };
 
     std::vector<glm::vec3>* circleVector = generateCirclePoints(24);

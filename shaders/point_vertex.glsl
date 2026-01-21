@@ -13,5 +13,5 @@ void main()
 {
     mat4 modelMatrix = transforms[gl_InstanceID];
     gl_Position = projection * view * modelMatrix * vec4(aPos, 1.0);
-    gl_PointSize = size * 20.0;  // Set point size
+    gl_PointSize = size * 3.0;  // Set point size
 }

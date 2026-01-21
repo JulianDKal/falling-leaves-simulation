@@ -169,19 +169,27 @@ void UI::update(EmitterParams& emitterParams)
     ImGui::Spacing();
 
 
-    //TODO: This currently breaks the simulation. Probably because the right events are not being sent yet
     if (ImGui::Button("Reset to Defaults", ImVec2(-1, 0))) {
-        emitterParams = EmitterParams{
-            glm::vec3(0.0f, 0.0f, 0.0f),  // windForce
-            0.6f,                          // size
-            9.81f,                         // gravity
-            false,                         // spiralingMotion
-            false,                         // tumbling
-            10000,                         // leafCount
-            20.0f,                         // emitRadius
-            100.0f,                        // emitHeight
-            EmitterShape::circleShape      // shape
-        };
+        if(emitterParams.shape != EmitterShape::circleShape || emitterParams.size != 20.0f){
+            SDL_Event event {.type = EMIT_AREA_CHANGED_EVENT}; 
+            SDL_PushEvent(&event);
+        }
+        if(emitterParams.leafCount != 10000) {
+            SDL_Event event {.type = PARTICLE_COUNT_UPDATED_EVENT}; 
+            SDL_PushEvent(&event);
+        }
+        emitterParams = EmitterParams {
+        glm::vec3(0.0f, 0.0f, 0.0f),  // windForce
+        0.6f,                          // size
+        9.81f,                         // gravity
+        false,                         // spiralingMotion
+        false,                         // tumbling
+        1000,                         // leafCount
+        10.0f,                         // emitRadius
+        15.0f,                         // emitHeight
+        EmitterShape::circleShape,      // shape of the emitter
+        ParticleShape::sphereShape     // particle shape
+    };
     }
 
     ImGui::Spacing();
