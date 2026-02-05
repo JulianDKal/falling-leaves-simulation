@@ -176,10 +176,11 @@ Emitter::Emitter(const EmitterParams& params)
 
     leaves.reserve(numInstances);
     leaves.resize(numInstances);
-    int sectorCount = 20, stackCount = 12;
+    int sectorCount = 12, stackCount = 8;
 
     sphereCoordinates = generateSpherePoints(sectorCount, stackCount, 0.25f);
     sphereIndices = generateSphereIndices(sectorCount, stackCount);
+    sphereNormals = generateSphereNormals(sectorCount, stackCount);
 
     //Set up the Shader Storage Buffer Object for the leaf model matrices
     glGenBuffers(1, &transformationsSSBO);
@@ -231,16 +232,23 @@ Emitter::Emitter(const EmitterParams& params)
     glGenVertexArrays(1, &sphereVAO);
     glGenBuffers(1, &sphereVBO);
     glGenBuffers(1, &sphereEBO);
+    glGenBuffers(1, &sphereNormalsVBO);
     glBindVertexArray(sphereVAO);
     
     glBindBuffer(GL_ARRAY_BUFFER, sphereVBO);
     glBufferData(GL_ARRAY_BUFFER, sphereCoordinates->size() * 3 * sizeof(float), sphereCoordinates->data(), GL_STATIC_DRAW);
 
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereEBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sphereIndices->size() * sizeof(unsigned int), sphereIndices->data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, sphereNormalsVBO);
+    glBufferData(GL_ARRAY_BUFFER, sphereNormals->size() * 3 * sizeof(float), sphereNormals->data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
 
     //Buffers for the point shape
 

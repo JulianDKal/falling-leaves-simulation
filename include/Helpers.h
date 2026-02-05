@@ -63,7 +63,7 @@ inline std::vector<glm::vec3>* generateSpherePoints(int sectorCount, int stackCo
         xz = cosf(stackAngle); 
         y = sinf(stackAngle);
 
-        for (int j = 0; j < sectorCount; j++)
+        for (int j = 0; j <= sectorCount; j++)
         {
             sectorAngle = j * sectorStep;
 
@@ -114,6 +114,33 @@ inline std::vector<unsigned int>* generateSphereIndices(int sectorCount, int sta
 
     return indices;
         
+}
+
+inline std::vector<glm::vec3>* generateSphereNormals(int sectorCount, int stackCount) {
+    std::vector<glm::vec3>* result = new std::vector<glm::vec3>();
+    float sectorStep = 2 * pi / sectorCount;
+    float stackStep = pi / stackCount;
+    float sectorAngle, stackAngle;
+    float xz, y;
+
+    for (int i = 0; i <= stackCount; i++)
+    {
+        stackAngle = pi / 2 - i * stackStep; // starting from pi/2 to -pi/2
+        xz = cosf(stackAngle); 
+        y = sinf(stackAngle);
+
+        for (int j = 0; j < sectorCount; j++)
+        {
+            sectorAngle = j * sectorStep;
+
+            glm::vec3 normal;
+            normal.x = xz * cosf(sectorAngle);
+            normal.y = y;
+            normal.z = xz * sinf(sectorAngle);
+            result->push_back(normal);  
+        }
+    }
+    return result;
 }
 
 inline GLenum getErrorCode_(const char* file, int line) {

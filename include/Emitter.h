@@ -30,9 +30,9 @@ class Emitter
 private:
     std::vector<Leaf> leaves;
     unsigned int leafVAO, leafVBO, leafEBO;
-    std::vector<glm::vec3>* sphereCoordinates;
+    std::vector<glm::vec3>* sphereCoordinates, *sphereNormals;
     std::vector<unsigned int>* sphereIndices;
-    unsigned int sphereVAO, sphereVBO, sphereEBO;
+    unsigned int sphereVAO, sphereVBO, sphereEBO, sphereNormalsVBO;
     unsigned int pointVAO, pointVBO;
 
     //store the rotation matrices, positions, rotations and current velocity for each leaf.
