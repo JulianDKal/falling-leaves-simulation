@@ -94,7 +94,7 @@ void UI::update(EmitterParams& emitterParams)
 
     if (ImGui::InputInt("##leafCount", &emitterParams.leafCount, 100, 1000, ImGuiInputTextFlags_EnterReturnsTrue)) {
         // Validate when Enter is pressed
-        emitterParams.leafCount = glm::clamp(emitterParams.leafCount, 1, 1000000);
+        emitterParams.leafCount = glm::clamp(emitterParams.leafCount, 1, 10000000);
         SDL_Event event {.type = PARTICLE_COUNT_UPDATED_EVENT};
         SDL_PushEvent(&event);
     }
