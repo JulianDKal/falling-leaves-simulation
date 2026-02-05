@@ -11,6 +11,9 @@ layout(std430, binding = 1) buffer InitialPositionsBuffer {
 layout(std430, binding = 2) buffer rotationsBuffer {
     vec4 rotations[];
 };
+layout(std430, binding = 3) buffer velocityBuffer {
+    vec4 velocities[];
+};
 
 layout(location = 0) uniform float emitHeight;
 layout(location = 1) uniform float scale;
@@ -31,8 +34,8 @@ void main() {
     float mass = 1.0;
     float drag = 0.9;
     vec3 acceleration = vec3(0);
-    vec3 velocity = vec3(0);
-    vec3 gravityForce = vec3(0.0, -gravity * 10, 0.0);
+    vec3 velocity = vec3(velocities[leafID]);
+    vec3 gravityForce = vec3(0.0, -gravity, 0.0);
 
     // Get current matrix
     mat4 model = modelMatrices[leafID];
@@ -44,8 +47,13 @@ void main() {
     acceleration += windForce * 5 / mass;
     velocity += acceleration * fixedDT * drag;
     position += velocity * fixedDT;
+
     if(position.y <= 0.0){
         position = vec3(initialPositions[leafID].x, emitHeight, initialPositions[leafID].z);
+        velocities[leafID] = vec4(0);
+    }
+    else {
+        velocities[leafID] = vec4(velocity, 0.0);
     }
 
     //rotate

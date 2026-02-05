@@ -138,9 +138,11 @@ void Emitter::changeEmitArea(const EmitterParams &params)
 
 void Emitter::uploadInitialTransforms() {
         std::vector<glm::mat4> initialTransforms(numInstances);
-        //Might be able to remove this later if the leaves can respawn randomly in the compute shader
+        //Might be able to remove this later if the particles can respawn randomly in the compute shader
         std::vector<glm::vec4> initialPositions(numInstances); 
         std::vector<glm::vec4> rotations(numInstances);
+        //velocity is 0 at the beginning for all particles
+        std::vector<glm::vec4> velocities(numInstances, glm::vec4(0));
         for (int i = 0; i < numInstances; i++) {
             initialTransforms[i] = leaves[i].getLeafModel();
             //Need to make these vec4 because of memory alignment reasons in the compute shader - might be able to fix later?
@@ -156,6 +158,9 @@ void Emitter::uploadInitialTransforms() {
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, rotationsSSBO);
         glBufferData(GL_SHADER_STORAGE_BUFFER, numInstances * sizeof(glm::vec4), rotations.data(), GL_DYNAMIC_DRAW);
+
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, velocitySSBO);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, numInstances * sizeof(glm::vec4), velocities.data(), GL_DYNAMIC_DRAW);
 
     }
 
@@ -194,6 +199,12 @@ Emitter::Emitter(const EmitterParams& params)
 
     glBufferData(GL_SHADER_STORAGE_BUFFER, numInstances * sizeof(glm::vec4), nullptr, GL_DYNAMIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, rotationsSSBO);
+
+    glGenBuffers(1, &velocitySSBO);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, velocitySSBO);
+
+    glBufferData(GL_SHADER_STORAGE_BUFFER, numInstances * sizeof(glm::vec4), nullptr, GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, velocitySSBO);
 
 
     //Generate buffers for the leaf object that will be used for instancing

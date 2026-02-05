@@ -35,7 +35,8 @@ private:
     unsigned int sphereVAO, sphereVBO, sphereEBO;
     unsigned int pointVAO, pointVBO;
 
-    unsigned int transformationsSSBO, positionsSSBO, rotationsSSBO; //The first SSBO stores the contiuously updated matrices, the second the initial positions
+    //store the rotation matrices, positions, rotations and current velocity for each leaf.
+    unsigned int transformationsSSBO, positionsSSBO, rotationsSSBO, velocitySSBO; 
     Shader computeShader;
     int numInstances;
     Shader leafShader, sphereShader, pointShader;
