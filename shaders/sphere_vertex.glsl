@@ -13,7 +13,9 @@ uniform mat4 projection;
 
 void main()
 {
-    normal = aNormal;
+
     mat4 modelMatrix = transforms[gl_InstanceID];
+    normal = normalize(mat3(modelMatrix) * aNormal);
+    //normal = normalize(aNormal);
     gl_Position = projection * view * modelMatrix * vec4(aPos, 1.0);
 }

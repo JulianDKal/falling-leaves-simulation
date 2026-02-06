@@ -312,9 +312,10 @@ int main() {
         //Actually draw all the leaves
         if(simulationRunning) {
             emitter.update(deltaTime, emitterParams);
-            emitter.draw(view, projection, emitterParams);
         }
-
+        
+        emitter.draw(view, projection, emitterParams);
+        
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
 

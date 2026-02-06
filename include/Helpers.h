@@ -129,7 +129,7 @@ inline std::vector<glm::vec3>* generateSphereNormals(int sectorCount, int stackC
         xz = cosf(stackAngle); 
         y = sinf(stackAngle);
 
-        for (int j = 0; j < sectorCount; j++)
+        for (int j = 0; j <= sectorCount; j++)
         {
             sectorAngle = j * sectorStep;
 

@@ -25,8 +25,11 @@ void Emitter::fixedUpdatePhysics(float fixedDT)
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, transformationsSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, positionsSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, rotationsSSBO);
-    // Dispatch compute shader
-    glDispatchCompute(numInstances, 1, 1);
+    // the work group size is 16 x 16, so we have to divide the number of workgroups by 256 to not dispatch too many instances
+    int workGroupSize = 16 * 16;
+    //numInstances divided by workGroupSize, rounded up so we don't process too few particles, but has to be at least one
+    int numWorkGroups = std::max(numInstances + (workGroupSize - 1) / workGroupSize, 1); 
+    glDispatchCompute(numWorkGroups, 1, 1);
     // Wait for compute to finish
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
@@ -36,7 +39,10 @@ void Emitter::draw(const glm::mat4 &view, const glm::mat4 &projection, const Emi
 {
     getErrorCode();
     if(params.particleShape == ParticleShape::leafShape){
+
         glUseProgram(leafShader.ID);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, transformationsSSBO);
+
         leafShader.useTexture(leafTexture, "leafTexture");
 
         getErrorCode();
@@ -53,6 +59,7 @@ void Emitter::draw(const glm::mat4 &view, const glm::mat4 &projection, const Emi
         getErrorCode();
         sphereShader.setMatrix4("view", view);
         sphereShader.setMatrix4("projection", projection);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, transformationsSSBO);
 
         glBindVertexArray(sphereVAO);
 
