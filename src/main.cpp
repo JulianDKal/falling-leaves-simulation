@@ -43,6 +43,8 @@ float quadVertices[] = {
     -1.0f, 0.0f,  1.0f 
 };
 
+unsigned int sphereVAO, sphereVBO, sphereEBO; 
+
 double currentTime, lastFrameTime = 0.0;
 float deltaTime;
 bool simulationRunning = false;
@@ -90,6 +92,8 @@ int main() {
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     EmitterParams emitterParams {
         glm::vec3(0.0f, 0.0f, 0.0f),  // windForce
+        std::vector<glm::vec3>(),
+        10.0f,
         0.6f,                          // size
         9.81f,                         // gravity
         false,                         // spiralingMotion
@@ -100,6 +104,9 @@ int main() {
         EmitterShape::circleShape,      // shape of the emitter
         ParticleShape::sphereShape     // particle shape
     };
+    emitterParams.blackHolePositions.push_back(glm::vec3{0.0f});
+    emitterParams.blackHolePositions.push_back(glm::vec3{0.0f});
+
 
     std::vector<glm::vec3>* circleVector = generateCirclePoints(24);
 
@@ -107,6 +114,8 @@ int main() {
     gridShader.createProgram("./../shaders/grid_vertex.glsl", "./../shaders/grid_fragment.glsl");
     Shader lineShader;
     lineShader.createProgram("./../shaders/line_vertex.glsl", "./../shaders/line_fragment.glsl");
+    Shader blackHoleShader;
+    blackHoleShader.createProgram("./../shaders/blackhole_vertex.glsl", "./../shaders/blackhole_fragment.glsl");
 
     Texture gridTexture;
     gridTexture.initialize("./../textures/grid.jpg", 0);
@@ -177,12 +186,34 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+    //Black Hole Object Setup
+    int horizontalSegments = 18, verticalSegments = 10;
+    float radius = 0.35f;
+    std::vector<glm::vec3>* sphereVertices = generateSpherePoints(horizontalSegments, verticalSegments, radius);
+    std::vector<unsigned int>* sphereIndices = generateSphereIndices(horizontalSegments, verticalSegments);
+
+    glGenVertexArrays(1, &sphereVAO);
+    glGenBuffers(1, &sphereVBO);
+    glGenBuffers(1, &sphereEBO);
+    
+    glBindVertexArray(sphereVAO);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, sphereVBO);
+    glBufferData(GL_ARRAY_BUFFER, sphereVertices->size() * sizeof(glm::vec3), sphereVertices->data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sphereIndices->size() * sizeof(unsigned int), sphereIndices->data(), GL_STATIC_DRAW);
+    
     //Unbind
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
     
     bool running = true;
     float rotationSpeed = 0.3f;
+    float blackHoleRotation = 0.0f;
 
     lastFrameTime = SDL_GetPerformanceCounter();
 
@@ -309,13 +340,41 @@ int main() {
         glLineWidth(1.0f);
         glDisable(GL_BLEND);
 
+        //Update and draw the black holes
+        blackHoleRotation += deltaTime;
+        blackHoleShader.setMatrix4("view", view);
+        blackHoleShader.setMatrix4("projection", projection);
+
+        glm::vec3 bHPos1 = glm::vec3{cos(blackHoleRotation) * 6.0f, sin(blackHoleRotation) * 6.0f + 6.35f, 0};
+        glm::vec3 bHPos2 = glm::vec3{cos(blackHoleRotation - glm::pi<float>()) * 6.0f, sin(blackHoleRotation - glm::pi<float>()) * 6.0f + 6.35f, 0};
+        emitterParams.blackHolePositions[0] = bHPos1;
+        emitterParams.blackHolePositions[1] = bHPos2;
+
+        glm::mat4 bHModel = glm::mat4(1.0f);
+        bHModel = glm::translate(bHModel, bHPos1);
+        glUseProgram(blackHoleShader.ID);
+
+        blackHoleShader.setMatrix4("model", bHModel);
+
+        glBindVertexArray(sphereVAO);
+        glDrawElements(GL_TRIANGLES, sphereIndices->size(), GL_UNSIGNED_INT, 0);
+        
+        //model matrix for the second black hole, the rotation is offsetted by pi aka 180 degrees
+        bHModel = glm::mat4(1.0f);
+        bHModel = glm::translate(bHModel, bHPos2);
+
+        blackHoleShader.setMatrix4("model", bHModel);
+
+        glDrawElements(GL_TRIANGLES, sphereIndices->size(), GL_UNSIGNED_INT, 0);
+
+
         //Actually draw all the leaves
         if(simulationRunning) {
             emitter.update(deltaTime, emitterParams);
         }
         
         emitter.draw(view, projection, emitterParams);
-        
+
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
 

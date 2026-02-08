@@ -12,6 +12,8 @@ void Emitter::update(float dT, const EmitterParams& params)
     computeShader.setFloat("scale", params.size);
     computeShader.setFloat("gravity", params.gravity);
     computeShader.setVec3f("windForce", params.windForce);
+    computeShader.setFloat("blackHoleMass", params.blackHoleMass);
+    glUniform3fv(glGetUniformLocation(computeShader.ID, "blackHolePositions"), 2, glm::value_ptr(params.blackHolePositions[0]));
 
     while (physicsAccumulator >= fixedDT)
     {

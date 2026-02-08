@@ -180,6 +180,8 @@ void UI::update(EmitterParams& emitterParams)
         }
         emitterParams = EmitterParams {
         glm::vec3(0.0f, 0.0f, 0.0f),  // windForce
+        std::vector<glm::vec3>(),
+        10.0f,
         0.6f,                          // size
         9.81f,                         // gravity
         false,                         // spiralingMotion
@@ -189,7 +191,7 @@ void UI::update(EmitterParams& emitterParams)
         15.0f,                         // emitHeight
         EmitterShape::circleShape,      // shape of the emitter
         ParticleShape::sphereShape     // particle shape
-    };
+        };
     }
 
     ImGui::Spacing();

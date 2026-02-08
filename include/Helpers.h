@@ -22,6 +22,8 @@ enum class ParticleShape {
 //This also gets passed to the leaf update method
 struct EmitterParams {
     glm::vec3 windForce;
+    std::vector<glm::vec3> blackHolePositions;
+    float blackHoleMass = 10.0f;
     float size = 1.0f; //Leaf size
     float gravity = 9.81f;
     bool spiralingMotion = false;

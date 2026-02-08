@@ -15,10 +15,12 @@ layout(std430, binding = 3) buffer velocityBuffer {
     vec4 velocities[];
 };
 
-layout(location = 0) uniform float emitHeight;
-layout(location = 1) uniform float scale;
-layout(location = 2) uniform float gravity;
-layout(location = 3) uniform vec3 windForce;
+uniform float emitHeight;
+uniform float scale;
+uniform float gravity;
+uniform vec3 windForce;
+uniform vec3 blackHolePositions[2];
+uniform float blackHoleMass;
 
 mat3 eulerToMat3(vec3 euler);
 vec3 applyForce(vec3 force, float mass);
@@ -27,7 +29,7 @@ void main() {
     //Compute a global ID for the current invocation from the workgroup size, workgroup ID and local Invocation IDs
     uint leafID = gl_WorkGroupID.x * gl_WorkGroupSize.x * gl_WorkGroupSize.y
                     + gl_LocalInvocationID.y * 16 + gl_LocalInvocationID.x;
-                    
+
     if (leafID >= modelMatrices.length()) {
         return;
     }
@@ -45,9 +47,15 @@ void main() {
     mat4 newModel = mat4(1.0);
     vec3 position = vec3(model[3]);
 
+    vec3 bHVector = blackHolePositions[0] - position;
+    float distance = length(bHVector);
+
+    vec3 pullForce = bHVector * ((blackHoleMass * mass ) / pow(distance, 2));
+
     // Update position
     acceleration += gravityForce / mass;
     acceleration += windForce * 5 / mass;
+    acceleration += pullForce;
     velocity += acceleration * fixedDT * drag;
     position += velocity * fixedDT;
 
