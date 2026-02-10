@@ -7,12 +7,12 @@ git submodule update
 #initialize vcpkg
 cd vcpkg
 ./bootstrap-vcpkg.sh
-vcpkg new --application
+./vcpkg new --application
 #specify the dependencies to download for vcpkg
 echo '{
   "name": "falling-leaves-simulation",
   "version": "1.0.0",
-  "description": "An app that simulates large numbers of falling leaves",
+  "description": "An app that simulates large numbers of particles",
   "dependencies": [
     "sdl3",
     "opengl",
@@ -25,7 +25,7 @@ echo '{
   ]
 }' > vcpkg.json
 
-vcpkg install
+./vcpkg install
 
 cd ..
 
