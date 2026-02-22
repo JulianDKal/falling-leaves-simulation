@@ -113,7 +113,9 @@ int main() {
         glm::vec3(0.0f, 0.0f, 0.0f),  // windForce
         std::vector<glm::vec3>(),      //black hole positions
         10.0f,                         //black hole mass (controls its impact on the particles)
-        0.6f,                          // size
+        1.0f,                          //black hole speed
+        6.0f,                          //black hole radius
+        1.0f,                          // size
         9.81f,                         // gravity
         false,                         // spiralingMotion
         false,                         // tumbling
@@ -360,12 +362,13 @@ int main() {
         glDisable(GL_BLEND);
 
         //Update and draw the black holes
-        blackHoleRotation += deltaTime;
+        blackHoleRotation += deltaTime * emitterParams.blackHoleSpeed;
+        float r = emitterParams.blackHoleRadius;
         blackHoleShader.setMatrix4("view", view);
         blackHoleShader.setMatrix4("projection", projection);
 
-        glm::vec3 bHPos1 = glm::vec3{cos(blackHoleRotation) * 6.0f, sin(blackHoleRotation) * 6.0f + 6.35f, 0};
-        glm::vec3 bHPos2 = glm::vec3{cos(blackHoleRotation - glm::pi<float>()) * 6.0f, sin(blackHoleRotation - glm::pi<float>()) * 6.0f + 6.35f, 0};
+        glm::vec3 bHPos1 = glm::vec3{cos(blackHoleRotation) * r, sin(blackHoleRotation) * r + 6.35f, 0};
+        glm::vec3 bHPos2 = glm::vec3{cos(blackHoleRotation - glm::pi<float>()) * r, sin(blackHoleRotation - glm::pi<float>()) * r + 6.35f, 0};
         emitterParams.blackHolePositions[0] = bHPos1;
         emitterParams.blackHolePositions[1] = bHPos2;
 

@@ -35,6 +35,10 @@ void UI::update(EmitterParams& emitterParams)
     ImGui::Text("Application average %.3f ms/frame", 1000.0f / io.Framerate);
     ImGui::Dummy(ImVec2{0, 20});
 
+    //#######################################################################################################################################
+    //EMITTER SETTINGS
+    //#######################################################################################################################################
+
     
     // Section header with spacing
     ImGui::SeparatorText("Emitter Parameters");
@@ -66,28 +70,19 @@ void UI::update(EmitterParams& emitterParams)
 
     ImGui::Spacing();
 
-    // 2. Size
-    ImGui::Text("Leaf Size:");
-    ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.9f);
-    ImGui::SliderFloat("##size", &emitterParams.size, 0.1f, 10.0f, "%.1f");
-    ImGui::PopItemWidth();
+    // ImGui::Text("Motion:");
+    // float buttonWidth = (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x) / 2.0f;
+    // if (ImGui::Button(emitterParams.spiralingMotion ? "Spiraling: ON" : "Spiraling: OFF", 
+    //                 ImVec2(buttonWidth, 0))) {
+    //     emitterParams.spiralingMotion = !emitterParams.spiralingMotion;
+    // }
+    // ImGui::SameLine();
+    // if (ImGui::Button(emitterParams.tumbling ? "Tumbling: ON" : "Tumbling: OFF", 
+    //                 ImVec2(buttonWidth, 0))) {
+    //     emitterParams.tumbling = !emitterParams.tumbling;
+    // }
 
-    ImGui::Spacing();
-
-    // 3. Motion Toggles (side by side)
-    ImGui::Text("Motion:");
-    float buttonWidth = (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x) / 2.0f;
-    if (ImGui::Button(emitterParams.spiralingMotion ? "Spiraling: ON" : "Spiraling: OFF", 
-                    ImVec2(buttonWidth, 0))) {
-        emitterParams.spiralingMotion = !emitterParams.spiralingMotion;
-    }
-    ImGui::SameLine();
-    if (ImGui::Button(emitterParams.tumbling ? "Tumbling: ON" : "Tumbling: OFF", 
-                    ImVec2(buttonWidth, 0))) {
-        emitterParams.tumbling = !emitterParams.tumbling;
-    }
-
-    ImGui::Spacing();
+    // ImGui::Spacing();
 
     ImGui::Text("Leaf Count:");
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.6f);
@@ -126,7 +121,6 @@ void UI::update(EmitterParams& emitterParams)
 
     ImGui::Spacing();
 
-    // 7. Shape (Radio buttons)
     ImGui::Text("Emitter Shape:");
     ImGui::Spacing();
     ImGui::Indent(10.0f);
@@ -149,6 +143,24 @@ void UI::update(EmitterParams& emitterParams)
     ImGui::Unindent(10.0f);
     ImGui::Spacing();
 
+    //#######################################################################################################################################
+    //PARTICLE SETTINGS
+    //#######################################################################################################################################
+
+
+    // Section header with spacing
+    ImGui::Spacing();
+    ImGui::SeparatorText("Particle Parameters");
+    ImGui::Spacing();
+
+    ImGui::Text("Particle Size:");
+    ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.9f);
+    ImGui::SliderFloat("##size", &emitterParams.size, 0.1f, 10.0f, "%.1f");
+    ImGui::PopItemWidth();
+
+    ImGui::Spacing();
+
+
     ImGui::Text("Particle Shape:");
     ImGui::Spacing();
     ImGui::Indent(10.0f);
@@ -163,6 +175,36 @@ void UI::update(EmitterParams& emitterParams)
     if (ImGui::RadioButton("Point", emitterParams.particleShape == ParticleShape::pointShape)) {
         emitterParams.particleShape = ParticleShape::pointShape;
     }
+
+    //########################################################################################################################################
+    //BLACK HOLE SETTINGS
+    //#######################################################################################################################################
+
+
+    // Section header with spacing
+    ImGui::Spacing();
+    ImGui::SeparatorText("Black Hole Parameters");
+    ImGui::Spacing();
+
+    ImGui::Text("Mass:");
+
+    ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.9f);
+    ImGui::SliderFloat("##blackHoleMass", &emitterParams.blackHoleMass, 0.1f, 100.0f, "%.1f");
+    ImGui::PopItemWidth();
+
+    // Black Hole Speed slider
+    ImGui::Text("Speed:");
+
+    ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.9f);
+    ImGui::SliderFloat("##blackHoleSpeed", &emitterParams.blackHoleSpeed, 0.0f, 5.0f, "%.2f");
+    ImGui::PopItemWidth();
+
+    // Black Hole Radius slider
+    ImGui::Text("Radius:");
+
+    ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.9f);
+    ImGui::SliderFloat("##blackHoleRadius", &emitterParams.blackHoleRadius, 0.5f, 20.0f, "%.1f");
+    ImGui::PopItemWidth();
 
     ImGui::Spacing();
     ImGui::Separator();
@@ -180,8 +222,10 @@ void UI::update(EmitterParams& emitterParams)
         }
         emitterParams = EmitterParams {
         glm::vec3(0.0f, 0.0f, 0.0f),  // windForce
-        std::vector<glm::vec3>(),
-        10.0f,
+        std::vector<glm::vec3>(),       //black hole positions
+        10.0f,                          //black hole mass
+        1.0f,                          //black hole speed
+        1.0f,                          //black hole radius
         0.6f,                          // size
         9.81f,                         // gravity
         false,                         // spiralingMotion
