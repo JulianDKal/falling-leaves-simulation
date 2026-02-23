@@ -114,7 +114,8 @@ int main() {
         std::vector<glm::vec3>(),      //black hole positions
         10.0f,                         //black hole mass (controls its impact on the particles)
         1.0f,                          //black hole speed
-        6.0f,                          //black hole radius
+        6.0f,                          //black hole radius 
+        0.0f,                          //black hole angle
         1.0f,                          // size
         9.81f,                         // gravity
         false,                         // spiralingMotion
@@ -364,11 +365,26 @@ int main() {
         //Update and draw the black holes
         blackHoleRotation += deltaTime * emitterParams.blackHoleSpeed;
         float r = emitterParams.blackHoleRadius;
+        float angle = glm::radians(emitterParams.blackHoleAngle);
         blackHoleShader.setMatrix4("view", view);
         blackHoleShader.setMatrix4("projection", projection);
 
-        glm::vec3 bHPos1 = glm::vec3{cos(blackHoleRotation) * r, sin(blackHoleRotation) * r + 6.35f, 0};
-        glm::vec3 bHPos2 = glm::vec3{cos(blackHoleRotation - glm::pi<float>()) * r, sin(blackHoleRotation - glm::pi<float>()) * r + 6.35f, 0};
+        glm::vec3 bHPos1 = glm::vec3{cos(blackHoleRotation) * r, sin(blackHoleRotation) * r, 0};
+        float y = bHPos1.y;
+        float z = bHPos1.z;
+        bHPos1.y = cos(angle) * y - sin(angle) * z;
+        bHPos1.z = sin(angle) * y + cos(angle) * z;
+        // std::cout << cos(angle) << " " << sin(angle) << std::endl;
+        bHPos1.y += 6.35f;
+
+        glm::vec3 bHPos2 = glm::vec3{cos(blackHoleRotation - glm::pi<float>()) * r, sin(blackHoleRotation - glm::pi<float>()) * r, 0};
+        y = bHPos2.y;
+        z = bHPos2.z;
+        bHPos2.y = cos(angle) * y - sin(angle) * z;
+        bHPos2.z = sin(angle) * y + cos(angle) * z;
+        // std::cout << cos(angle) << " " << sin(angle) << std::endl;
+        bHPos2.y += 6.35f;
+
         emitterParams.blackHolePositions[0] = bHPos1;
         emitterParams.blackHolePositions[1] = bHPos2;
 
@@ -393,9 +409,9 @@ int main() {
         //Actually draw all the leaves
         if(simulationRunning) {
             emitter.update(deltaTime, emitterParams);
+            emitter.draw(view, projection, emitterParams);
         }
         
-        emitter.draw(view, projection, emitterParams);
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);

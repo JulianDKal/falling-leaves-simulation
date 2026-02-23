@@ -26,6 +26,7 @@ struct EmitterParams {
     float blackHoleMass = 10.0f;
     float blackHoleSpeed = 1.0f;
     float blackHoleRadius = 1.0f;
+    float blackHoleAngle = 0.0f;
     float size = 1.0f; //Leaf size
     float gravity = 9.81f;
     bool spiralingMotion = false;

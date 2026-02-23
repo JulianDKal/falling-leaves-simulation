@@ -84,10 +84,10 @@ void UI::update(EmitterParams& emitterParams)
 
     // ImGui::Spacing();
 
-    ImGui::Text("Leaf Count:");
+    ImGui::Text("Particle Count:");
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.6f);
 
-    if (ImGui::InputInt("##leafCount", &emitterParams.leafCount, 100, 1000, ImGuiInputTextFlags_EnterReturnsTrue)) {
+    if (ImGui::InputInt("##particleCount", &emitterParams.leafCount, 100, 1000, ImGuiInputTextFlags_EnterReturnsTrue)) {
         // Validate when Enter is pressed
         emitterParams.leafCount = glm::clamp(emitterParams.leafCount, 1, 10000000);
         SDL_Event event {.type = PARTICLE_COUNT_UPDATED_EVENT};
@@ -192,19 +192,24 @@ void UI::update(EmitterParams& emitterParams)
     ImGui::SliderFloat("##blackHoleMass", &emitterParams.blackHoleMass, 0.1f, 100.0f, "%.1f");
     ImGui::PopItemWidth();
 
-    // Black Hole Speed slider
     ImGui::Text("Speed:");
 
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.9f);
     ImGui::SliderFloat("##blackHoleSpeed", &emitterParams.blackHoleSpeed, 0.0f, 5.0f, "%.2f");
     ImGui::PopItemWidth();
 
-    // Black Hole Radius slider
     ImGui::Text("Radius:");
 
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.9f);
     ImGui::SliderFloat("##blackHoleRadius", &emitterParams.blackHoleRadius, 0.5f, 20.0f, "%.1f");
     ImGui::PopItemWidth();
+
+    ImGui::Text("Angle:");
+
+    ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.9f);
+    ImGui::SliderFloat("##blackHoleAngle", &emitterParams.blackHoleAngle, 0.0f, 90.0f, "%5.0f");
+    ImGui::PopItemWidth();
+
 
     ImGui::Spacing();
     ImGui::Separator();
@@ -226,6 +231,7 @@ void UI::update(EmitterParams& emitterParams)
         10.0f,                          //black hole mass
         1.0f,                          //black hole speed
         1.0f,                          //black hole radius
+        0.0f,
         0.6f,                          // size
         9.81f,                         // gravity
         false,                         // spiralingMotion
