@@ -5,9 +5,9 @@ layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 layout(std430, binding = 0) buffer ModelMatrixBuffer {
     mat4 modelMatrices[];
 };
-layout(std430, binding = 1) buffer InitialPositionsBuffer {
-    vec4 initialPositions[];
-};
+// layout(std430, binding = 1) buffer InitialPositionsBuffer {
+//     vec4 initialPositions[];
+// };
 layout(std430, binding = 2) buffer rotationsBuffer {
     vec4 rotations[];
 };
@@ -15,7 +15,9 @@ layout(std430, binding = 3) buffer velocityBuffer {
     vec4 velocities[];
 };
 
+uniform float time;
 uniform float emitHeight;
+uniform float emitRadius;
 uniform float scale;
 uniform float gravity;
 uniform vec3 windForce;
@@ -24,6 +26,10 @@ uniform float blackHoleMass;
 
 mat3 eulerToMat3(vec3 euler);
 vec3 applyForce(vec3 force, float mass);
+
+float random (vec2 st) {
+    return fract(sin(dot(st.xy, vec2(2.9898,20.233)))* 557578.5453123);
+}
 
 void main() {
     //Compute a global ID for the current invocation from the workgroup size, workgroup ID and local Invocation IDs
@@ -60,7 +66,10 @@ void main() {
     position += velocity * fixedDT;
 
     if(position.y <= 0.0){
-        position = vec3(initialPositions[leafID].x, emitHeight, initialPositions[leafID].z);
+        float rX = random(vec2(leafID, leafID + gl_LocalInvocationID.x)) * emitRadius * 2 - emitRadius;
+        float rY = random(vec2(leafID + time, time + gl_LocalInvocationID.x)) * emitHeight;
+        float rZ = random(vec2(gl_LocalInvocationID.x + time, gl_LocalInvocationID.y - time)) * emitRadius * 2 - emitRadius;
+        position = vec3(rX, rY, rZ);
         velocities[leafID] = vec4(0);
     }
     else {

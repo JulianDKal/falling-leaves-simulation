@@ -13,6 +13,8 @@ void Emitter::update(float dT, const EmitterParams& params)
     computeShader.setFloat("gravity", params.gravity);
     computeShader.setVec3f("windForce", params.windForce);
     computeShader.setFloat("blackHoleMass", params.blackHoleMass);
+    computeShader.setFloat("emitRadius", params.emitRadius);
+    computeShader.setFloat("time", dT * 1000.0f);
     glUniform3fv(glGetUniformLocation(computeShader.ID, "blackHolePositions"), 2, glm::value_ptr(params.blackHolePositions[0]));
 
     while (physicsAccumulator >= fixedDT)
@@ -25,8 +27,9 @@ void Emitter::update(float dT, const EmitterParams& params)
 void Emitter::fixedUpdatePhysics(float fixedDT)
 {
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, transformationsSSBO);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, positionsSSBO);
+    // glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, positionsSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, rotationsSSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, velocitySSBO);
     // the work group size is 16 x 16, so we have to divide the number of workgroups by 256 to not dispatch too many instances
     int workGroupSize = 16 * 16;
     //numInstances divided by workGroupSize, rounded up so we don't process too few particles, but has to be at least one
@@ -106,16 +109,13 @@ void Emitter::resizeParticleCount(const EmitterParams &params)
         std::random_device rd;
         std::mt19937 gen(rd());
 
-        std::uniform_real_distribution<float> posDist(-params.emitRadius, params.emitRadius);
         std::uniform_real_distribution<float> rotDist(0.0f, 360.0f);
-        std::uniform_real_distribution<float> oneDist(0.0f, 1.0f);
-        std::uniform_real_distribution<float> spawnHeightDist(0.0f, params.emitHeight);
 
         leaves.reserve(params.leafCount);
         Profiler::Start();
         for (int i = numInstances; i < params.leafCount; i++)
         {
-            leaves.emplace_back(createLeaf(params, gen, posDist, rotDist, oneDist, spawnHeightDist));
+            leaves.emplace_back(createLeaf(params, gen, rotDist));
         }
         Profiler::Stop(1);
         numInstances = params.leafCount;
@@ -131,14 +131,11 @@ void Emitter::changeEmitArea(const EmitterParams &params)
     std::random_device rd;
     std::mt19937 gen(rd());
 
-    std::uniform_real_distribution<float> posDist(-params.emitRadius, params.emitRadius);
     std::uniform_real_distribution<float> rotDist(0.0f, 360.0f);
-    std::uniform_real_distribution<float> oneDist(0.0f, 1.0f);
-    std::uniform_real_distribution<float> spawnHeightDist(0.0f, params.emitHeight);
     
     for (int i = 0; i < numInstances; i++)
     {
-        leaves[i] = std::move(createLeaf(params, gen, posDist, rotDist, oneDist, spawnHeightDist));
+        leaves[i] = std::move(createLeaf(params, gen, rotDist));
     }
     uploadInitialTransforms();
 
@@ -148,23 +145,18 @@ void Emitter::changeEmitArea(const EmitterParams &params)
 void Emitter::uploadInitialTransforms() {
         std::vector<glm::mat4> initialTransforms(numInstances);
         //Might be able to remove this later if the particles can respawn randomly in the compute shader
-        std::vector<glm::vec4> initialPositions(numInstances); 
         std::vector<glm::vec4> rotations(numInstances);
         //velocity is 0 at the beginning for all particles
         std::vector<glm::vec4> velocities(numInstances, glm::vec4(0));
         for (int i = 0; i < numInstances; i++) {
             initialTransforms[i] = leaves[i].getLeafModel();
             //Need to make these vec4 because of memory alignment reasons in the compute shader - might be able to fix later?
-            initialPositions[i] = glm::vec4(leaves[i].getPosition(), 1.0f);
             rotations[i] = glm::vec4(leaves[i].getRotation(), 1.0f);
         }
         
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, transformationsSSBO);
         glBufferData(GL_SHADER_STORAGE_BUFFER, numInstances * sizeof(glm::mat4), initialTransforms.data(), GL_DYNAMIC_DRAW);
-        
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, positionsSSBO);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, numInstances * sizeof(glm::vec4), initialPositions.data(), GL_DYNAMIC_DRAW);
-
+    
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, rotationsSSBO);
         glBufferData(GL_SHADER_STORAGE_BUFFER, numInstances * sizeof(glm::vec4), rotations.data(), GL_DYNAMIC_DRAW);
 
@@ -197,12 +189,6 @@ Emitter::Emitter(const EmitterParams& params)
 
     glBufferData(GL_SHADER_STORAGE_BUFFER, numInstances * sizeof(glm::mat4), nullptr, GL_DYNAMIC_DRAW); 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, transformationsSSBO);
-
-    glGenBuffers(1, &positionsSSBO);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, positionsSSBO);
-
-    glBufferData(GL_SHADER_STORAGE_BUFFER, numInstances * sizeof(glm::vec4), nullptr, GL_DYNAMIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, positionsSSBO);
 
     glGenBuffers(1, &rotationsSSBO);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, rotationsSSBO);
@@ -276,41 +262,17 @@ Emitter::Emitter(const EmitterParams& params)
 
 }
 
-glm::vec3 Emitter::generateRandomRotation(std::mt19937 &gen, std::uniform_real_distribution<float> &rotDist) {
-    return glm::vec3{
-        rotDist(gen),
-        rotDist(gen),
-        rotDist(gen)
-    };
-}
-
-Leaf Emitter::createLeaf(const EmitterParams &params, std::mt19937 &gen,
-                         std::uniform_real_distribution<float> &posDist,
-                         std::uniform_real_distribution<float> &rotDist,
-                         std::uniform_real_distribution<float> &oneDist,
-                         std::uniform_real_distribution<float> &spawnHeightDist)
+Leaf Emitter::createLeaf(const EmitterParams &params, std::mt19937 &gen, std::uniform_real_distribution<float> &rotDist)
 {
-    glm::vec3 position;
+    // else if(params.shape == EmitterShape::circleShape) {
+    //     position = glm::vec3{1, 0, 0};
+    //     glm::quat rotation = glm::angleAxis(glm::radians(rotDist(gen)), glm::vec3{0, 1, 0});
 
-    // Random spawn height from pre-made distribution
-    float spawnHeight = spawnHeightDist(gen);
-
-    if(params.shape == EmitterShape::boxShape) {
-        position = glm::vec3{
-            posDist(gen),    // X
-            spawnHeight,     // Y
-            posDist(gen)     // Z
-        };
-    }
-    else if(params.shape == EmitterShape::circleShape) {
-        position = glm::vec3{1, 0, 0};
-        glm::quat rotation = glm::angleAxis(glm::radians(rotDist(gen)), glm::vec3{0, 1, 0});
-
-        // Correct uniform distribution over the circle
-        float r = sqrt(oneDist(gen)) * params.emitRadius;
-        position = rotation * position * r + glm::vec3{0, spawnHeight, 0};
-    }
-    Leaf l{position, generateRandomRotation(gen, rotDist)};
+    //     // Correct uniform distribution over the circle
+    //     float r = sqrt(oneDist(gen)) * params.emitRadius;
+    //     position = rotation * position * r + glm::vec3{0, spawnHeight, 0};
+    // }
+    Leaf l{glm::vec3{rotDist(gen), 0, rotDist(gen)}};
 
     return l;
 }
